@@ -35,7 +35,7 @@ router.get('/api', (req, res) => {
         console.log(error)
         res.send(error)
       }
-     }); 
+     });  
   })
 
 module.exports = router
