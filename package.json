@@ -11,11 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "jsdom": "^23.0.1",
+    "pdfkit": "^0.14.0",
+    "pdfkit-table": "^0.1.99",
+    "pdfmake": "^0.2.8",
     "request": "^2.88.2"
   },
   "devDependencies": {
-    "http-proxy-middleware": "^2.0.6",
     "nodemon": "^3.0.1"
   }
 }
