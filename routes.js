@@ -132,4 +132,86 @@ router.get('/pdf', (req, res) => {
 
 
 })
+
+router.get('/api-pdf', cors(), (req, res) => {
+  var customHeaders = {
+  };
+  var requestOptions = {
+    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x42c4b617277d295dc9ec1c33c0639420630b713d054bbde086bdd714814651c1?blockchain=ethereum',
+    headers: customHeaders,
+  };
+  request(requestOptions, (error, response, body) => {
+    if (!error && response.statusCode === 200) {
+      const objTransaction = JSON.parse(body);
+     console.log(objTransaction)
+     const fonts = {
+      Roboto: {
+        normal: 'fonts/Roboto-Regular.ttf',
+        bold: 'fonts/Roboto-Medium.ttf',
+        italics: 'fonts/Roboto-Italic.ttf',
+        bolditalics: 'fonts/Roboto-MediumItalic.ttf'
+      }
+    };
+    const printer = new PdfPrinter(fonts);
+    const docDefinition = {
+      content: [
+        {
+          margin: [ 0, 0, 0, 20 ],
+          table: {
+          widths: [ '*', '*'],
+           
+            body: [
+              [ objTransaction.data.timeStamp, objTransaction.data.status ],
+            ]
+          }
+        },
+        { text: 'Ether', fontSize: 15 , alignment: 'center', bold: true, margin: [ 0, 0, 20, 20 ]},
+        {
+          table: {
+            widths: [ '*', 'auto' ],
+           
+            body: [
+              // [ 'First', 'Second' ],
+              [ 'Direction', 'Send ?' ],
+              [ 'Value', objTransaction.data.value ],
+              [ 'Recipient', objTransaction.data.to ],
+            ]
+          }
+        },
+        { text: 'Transaction Data', fontSize: 15 , alignment: 'center',bold: true,  margin: [ 0, 50, 20, 20 ]},
+        {
+          table: {
+            widths: [ '*', 'auto' ],
+           
+            body: [
+              // [ 'First', 'Second' ],
+              [ 'From', objTransaction.data.from ],
+              [ 'To', objTransaction.data.to ],
+              [ 'Block', objTransaction.data.blockNumber],
+              [ 'Hash', objTransaction.data.hash],
+              [ 'Nonce', objTransaction.data.nonce ],
+              [ 'Value', objTransaction.data.value ],
+              [ 'Gas Used', objTransaction.data.gasUsed ],
+              [ 'Gas Price', objTransaction.data.gasPrice ],
+              [ 'Fee', '0.000018 ?' ],
+              [ 'Input', objTransaction.data.input + '?'],
+            ]
+          }
+        }
+      ]    
+  };
+    
+    
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+    pdfDoc.pipe(fs.createWriteStream('document.pdf'));
+   // pdfDoc.pipe(res);
+
+    pdfDoc.end();
+     // res.send();
+    } else {
+      console.log('err', error)
+      res.send(error)
+    }
+  });
+})
 module.exports = router
