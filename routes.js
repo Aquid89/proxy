@@ -204,7 +204,7 @@ router.get('/api-pdf', cors(), (req, res) => {
     
     const pdfDoc = printer.createPdfKitDocument(docDefinition);
     pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-   // pdfDoc.pipe(res);
+    //pdfDoc.pipe(res);
 
     pdfDoc.end();
      // res.send();
