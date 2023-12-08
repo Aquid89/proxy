@@ -66,31 +66,20 @@ router.get('/pdf', (req, res) => {
     content: [
       {
         margin: [0, 0, 0, 20],
-        //layout: 'lightHorizontalLines', // optional
         table: {
-
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          //  headerRows: 1,
           widths: ['*', '*'],
 
           body: [
-            // [ 'First', 'Second' ],
             ['06.12.2023 14:15:59', ' Confirmed '],
           ]
         }
       },
       { text: 'Ether', fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] },
       {
-        //layout: 'lightHorizontalLines', // optional
         table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          //  headerRows: 1,
           widths: ['*', 'auto'],
 
           body: [
-            // [ 'First', 'Second' ],
             ['Direction', 'Send'],
             ['Value', '0.00001 ETH'],
             ['Recipient', '0x885035208dce7356faba7a6fa12fa4aee9fddd3e'],
@@ -99,15 +88,10 @@ router.get('/pdf', (req, res) => {
       },
       { text: 'Transaction Data', fontSize: 15, alignment: 'center', bold: true, margin: [0, 50, 20, 20] },
       {
-        //layout: 'lightHorizontalLines', // optional
         table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          //  headerRows: 1,
           widths: ['*', 'auto'],
 
           body: [
-            // [ 'First', 'Second' ],
             ['From', '0x195a9298f08a187147bead2465bfc264b4c9e821'],
             ['To', '0x885035208dce7356faba7a6fa12fa4aee9fddd3e'],
             ['Block', '?'],
@@ -123,18 +107,25 @@ router.get('/pdf', (req, res) => {
       }
     ]
   };
-
-
+  
   const pdfDoc = printer.createPdfKitDocument(docDefinition);
-  //pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-  pdfDoc.pipe(res);
+  const fileStream = pdfDoc.pipe(fs.createWriteStream('document.pdf'));
 
+  fileStream.on('finish', () => {
+    res.download('document.pdf', () => {
+      const filePath = path.resolve('document.pdf');
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
+    });
+
+  });
   pdfDoc.end();
-
-
 })
 
-router.get('/api-pdf', cors(), (req, res) => {
+router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
@@ -218,12 +209,6 @@ router.get('/api-pdf', cors(), (req, res) => {
           });
         });
 
-
-        // fs.unlink(filePath, (err) => {
-        //   if (err) {
-        //     console.error(err);
-        //   }
-        // });
       });
       // pdfDoc.pipe(fs.createWriteStream('document.pdf'));
       //    pdfDoc.pipe(res);
@@ -235,6 +220,39 @@ router.get('/api-pdf', cors(), (req, res) => {
       console.log('err', error)
       res.send(error)
     }
+  });
+})
+
+router.get('/test', cors(), (req, res) => {
+  const fileName = 'file.txt';
+  const fileContent = 'Test test!';
+
+  fs.writeFile(fileName, fileContent, (err) => {
+      if (!err) {
+          const filePath = path.join(__dirname, 'file.txt');
+    
+          res.setHeader('Content-Disposition', 'attachment; filename=file.txt');
+          res.setHeader('Content-Type', 'text/plain');
+      
+          const fileStream = fs.createReadStream(filePath);
+          fileStream.pipe(res);
+      
+          fileStream.on('end', () => {
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                console.error(err);
+              }
+            });
+            res.end();
+          });
+
+          fileStream.on('error', (err) => {
+            console.error(err);
+            res.statusCode = 500;
+            res.end('Internal Server Error');
+          });
+  
+      }
   });
 })
 module.exports = router
