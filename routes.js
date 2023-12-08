@@ -227,9 +227,9 @@ router.get('/test', cors(), (req, res) => {
   const fileName = 'file.txt';
   const fileContent = 'Test test!';
 
-  fs.writeFile('./tmp/file.txt', fileContent, (err) => {
+  fs.writeFile(__dirname+'/tmp/'+fileName, fileContent, (err) => {
       if (!err) {
-          const filePath = path.join('./tmp', 'file.txt');
+          const filePath = path.join(__dirname+'/tmp', 'file.txt');
     
           res.setHeader('Content-Disposition', 'attachment; filename=file.txt');
           res.setHeader('Content-Type', 'text/plain');
