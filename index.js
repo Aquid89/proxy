@@ -25,6 +25,6 @@ app.use(router)
 //       } 
 //      }); 
 //   });
-
+  //app.use("/public", express.static(path.join(__dirname, 'public')));
   app.listen(3000); 
   console.log('Server running on port %d', 3000);
