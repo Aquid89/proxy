@@ -15,7 +15,7 @@ router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
-    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591=ethereum',
+    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x532cf15c85bb247b8944af27e5f60e006012d6ead898f3385d16373077f880f2=ethereum', 
     headers: customHeaders,
   };
   request(requestOptions, (error, response, body) => {
@@ -35,9 +35,7 @@ router.get('/generate', cors(), (req, res) => {
         'send-ether': 'ETH Transaction',
         'send-erc20-token': 'ERC20 Transaction',
         'deploy-contract': 'Contract Deploy Tx',
-        // 'message': this.tx && this.tx.data && isJsonString(this.tx.data) && this.tx.to.toLowerCase() === this.addressCurrent
-        //     ? 'Invoice Tx'
-        //     : 'Message Tx',
+        'message': 'Message Tx ??',
         'swap': 'Swap Transaction',
         'nft-trade': 'NFT Trade Tx',
         'send-nft': 'NFT Transaction',
@@ -155,71 +153,76 @@ router.get('/generate', cors(), (req, res) => {
           break;
         case 'call':
           if (tx.data.logs.some(log => log.contractInfo)) {
+            docDefinition.content.splice(2, 0, {
+              table: {
+                widths: [100, '*'],
+                body: [
+                  ['Contract Address:', tx.data.to],
+                ]
+              }
+            })
+
             docDefinition.content.push({ text: 'Transfers', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
 
             const transfersList = tx.data.logs.filter(obj => obj.contractInfo)
 
-            console.log('transfersList', transfersList)
             if (transfersList.length) {
-              // docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
-              console.log('transfersList', transfersList)
-              for (var i = 0; i < transfersList.length; i++) {
+              transfersList.forEach(transfer => {
                 // Title transfer
-                if (transfersList[i].contractInfo.name) {
-                  docDefinition.content.push({ text: transfersList[i].contractInfo.name, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] })
-                } else {
-                  docDefinition.content.push({ text: transfersList[i].contractInfo.address, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] })
-                }
+                const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
+                docDefinition.content.push({ text: titleText, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] });
+              
                 // Body transfer
-                if (transfersList[i].name === 'Transfer') {
-                  docDefinition.content.push({
-                    table: {
-                      widths: [70, '*'],
-                      body: [
-                        ['Direction', 'addressCurrent??'],
-                        ['Contract', transfersList[i].contractInfo.address],
-                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
-                        ['Recipient', transfersList[i].params.to],
-                      ]
-                    }
-                  })
-                } else if (transfersList[i].name === 'Deposit') {
-                  docDefinition.content.push({
-                    table: {
-                      widths: [70, '*'],
-                      body: [
-                        ['Direction', 'Received'],
-                        ['Contract', transfersList[i].contractInfo.address],
-                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
-                        ['Sender', transfersList[i].params.user],
-                      ]
-                    }
-                  })
-
-                } else if (transfersList[i].name === 'Withdrawal') {
-                  docDefinition.content.push({
-                    table: {
-                      widths: [70, '*'],
-                      body: [
-                        ['Direction', 'Sent'],
-                        ['Contract', transfersList[i].contractInfo.address],
-                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
-                        ['Recipient', transfersList[i].params.src],
-                      ]
-                    }
-                  })
-
+                let tableBody = [];
+                if (transfer.name === 'Transfer') {
+                  tableBody = [
+                    ['Direction', 'addressCurrent??'],
+                    ['Contract', transfer.contractInfo.address],
+                    ['Value', calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                    ['Recipient', transfer.params.to],
+                  ];
+                } else if (transfer.name === 'Deposit') {
+                  tableBody = [
+                    ['Direction', 'Received'],
+                    ['Contract', transfer.contractInfo.address],
+                    ['Value', calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                    ['Sender', transfer.params.user],
+                  ];
+                } else if (transfer.name === 'Withdrawal') {
+                  tableBody = [
+                    ['Direction', 'Sent'],
+                    ['Contract', transfer.contractInfo.address],
+                    ['Value', calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                    ['Recipient', transfer.params.src],
+                  ];
                 }
-
-
+              
+                if (tableBody.length > 0) {
+                  docDefinition.content.push({
+                    table: {
+                      widths: [70, '*'],
+                      body: tableBody,
+                    },
+                  });
+                }
+              
                 docDefinition.content.push(' ');
-              }
+              });
             }
           }
           break;
         case 'deploy-contract':
           break;
         case 'message':
+          docDefinition.content.splice(2, 0, {
+            table: {
+              widths: [100, '*'],
+              body: [
+                ['Direction', '?'],
+                ['Message', formatMessage(tx.data.data)],
+              ]
+            }
+          })
           break;
         case 'swap':
           break;
@@ -250,25 +253,21 @@ router.get('/generate', cors(), (req, res) => {
 
       if (tx.data.logs.length) {
         docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
-        for (var i = 0; i < tx.data.logs.length; i++) {
+        const logsFiltered = tx.data.logs.filter(l => l.name !== 'OpenSeaLog')
+        logsFiltered.forEach(log => {
+          //console.log('log', log.params)
+          const arrBodyTable = []
+          Object.entries(log.params).forEach(([key, value]) => {
+            arrBodyTable.push([capitalize (key), value])
+          });
           docDefinition.content.push({
             table: {
               widths: [70, '*'],
-              body: [
-                ['Name', tx.data.logs[i].name],
-                ['Contract', tx.data.logs[i].contract],
-                ['Owner', tx.data.logs[i].params?.owner ? tx.data.logs[i].params.owner : null],
-                ['Spender', tx.data.logs[i].params?.spender ? tx.data.logs[i].params.spender : null],
-                ['Value', tx.data.logs[i].params?.value ? tx.data.logs[i].params.value : null],
-                ['Nft id', tx.data.logs[i].params?.nft_id ? tx.data.logs[i].params.nft_id : null],
-
-              ],
-
-            }
-          })
-
+              body: arrBodyTable
+            },
+          });  
           docDefinition.content.push(' ');
-        }
+        });
       }
 
       function calcLogEntryValue(logEntry) {
@@ -286,6 +285,37 @@ router.get('/generate', cors(), (req, res) => {
         }
         return new BigNumber(logEntry.params[field]).dividedBy(Math.pow(10, logEntry.contractInfo.decimals || 0)).dp(6).toString()
       }
+
+      function capitalize (string) {
+        return string.slice(0, 1).toUpperCase() + string.slice(1)
+    }
+
+    function isJsonString (str) {
+      try {
+          if (JSON.parse(str.message)?.moneyRequest) {
+              return true
+          }
+      } catch (e) {
+          return false
+      }
+  }
+
+    function formatMessage (item, message = '', invisibleSpace) {
+      if (isJsonString(item)) {
+          const moneyRequest = JSON.parse(item.message)
+          message = moneyRequest.moneyRequest.text || ''
+          message = message.length > 15
+              ? message.slice(0, 8) + '...'
+              : message || invisibleSpace
+      } else if (item.message) {
+          message = item.message.length > 15
+              ? item.message.slice(0, 8) + '...'
+              : item.message
+      } else {
+          return invisibleSpace
+      }
+      return message
+  }
 
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
       const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
