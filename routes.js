@@ -13,13 +13,13 @@ router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
-    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x6e15500dee8ec125ff971afbf05bea535d069afe2fcaa1c24ab4e723991e3dbb?blockchain=ethereum',
+    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x5efe17c690df82c5cbe078868ffafc2bdd78031a343c341471ac19c981ddef7c?blockchain=ethereum',
     headers: customHeaders,
   };
   request(requestOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       const tx = JSON.parse(body);
-      console.log(tx.data.type)
+      // console.log(tx.data.type)
       const fonts = {
         Roboto: {
           normal: 'fonts/Roboto-Regular.ttf',
@@ -68,31 +68,23 @@ router.get('/generate', cors(), (req, res) => {
           }
         }
       }
-      function generateLogs(logs) {
-        const arr = {
-            table: {
-              widths: ['*', 'auto'],
+      // function generateLogs(logs) {
+      //   const arr = {
+      //     table: {
+      //       widths: ['*', 'auto'],
 
-              body: [['Input',  '?']],
-            },
-            table: {
-              widths: ['*', 'auto'],
+      //       body: [['Input', '?']],
+      //     },
+      //     table: {
+      //       widths: ['*', 'auto'],
 
-              body: [['Input', '?']],
-            }
-  
-  
-        }
-        return arr
-        // return [
-        //   // [ 'First', 'Second' ],
-        //   ['From', tx.data.from],
-        //   ['To', tx.data.to],
-        // ]
-      }
-//////////////////////
+      //       body: [['Input', '?']],
+      //     }
 
-//////////////
+
+      //   }
+      //   return arr
+      // }
       const printer = new PdfPrinter(fonts);
       const docDefinition = {
         content: [
@@ -106,20 +98,7 @@ router.get('/generate', cors(), (req, res) => {
               ]
             }
           },
-          { text: typeHeadings[tx.data.type], fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] },
-          {
-            table: {
-              widths: ['*', 'auto'],
-
-              body: [
-                // [ 'First', 'Second' ],
-                ['Direction', 'Send ?'],
-                ['Value', tx.data.value],
-                ['Recipient', tx.data.to],
-              ]
-            }
-          },
-          { text: 'Transaction Data', fontSize: 15, alignment: 'center', bold: true, margin: [0, 50, 20, 20] },
+          { text: 'Transaction Data', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] },
           {
             table: {
               widths: ['*', 'auto'],
@@ -139,85 +118,97 @@ router.get('/generate', cors(), (req, res) => {
               ]
             }
           },
-       
-        //   {
-        //     table: {
-        //       widths: ['*', 'auto'],
-        //       body: [['Input',  '?']],
-        //     }
-  
-        // },
-        // {
-        //   table: {
-        //     widths: ['*', 'auto'],
-        //     body: [['Input',  '?']],
-        //   }
-        // }
-          // {
-          //   table: {
-          //     widths: ['*', 'auto'],
-
-          //     body: [generateLogs(tx.data.logs)],
-          //     body: [generateLogs(tx.data.logs)]
-          //   }
-          // }
-
         ]
-      };
-      if(tx.data.logs.length){
-      docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 50, 20, 20] })
-      for(var i=0;i<tx.data.logs.length;i++) {
-      //  console.log(tx.data.logs[i].params)
-        docDefinition.content.push({
-          table: {
-            widths: [70, '*'],
-            body: [
-            ['Name',  tx.data.logs[i].name], 
-            ['Contract',  tx.data.logs[i].contract], 
-            ['Owner',  tx.data.logs[i].params?.owner ? tx.data.logs[i].params.owner : null], 
-            ['Spender',  tx.data.logs[i].params?.spender ? tx.data.logs[i].params.spender :null], 
-            ['Value',  tx.data.logs[i].params?.value ? tx.data.logs[i].params.value : null], 
-            ['Nft id',  tx.data.logs[i].params?.nft_id ? tx.data.logs[i].params.nft_id : null], 
-          
-          ],
-          
-          }
-        })
-        //docDefinition.content.push(['Owner', '111'] )
-  
-        docDefinition.content.push(' ');
-
-      
       }
 
-      // function removeElement(array, elementToRemove) {
-      //   const index = array.indexOf(elementToRemove);
-      //   if (index !== -1) {
-      //     array.splice(index, 1);
-      //   }
-      // }
-      
-      // Iterate through the outer array
-      // function removeElementFromArray(array, elementToRemove) {
-      //   const index = array.indexOf(elementToRemove);
-      //   if (index !== -1) {
-      //     array.splice(index, 1);
-      //   }
-      // }
-      
-      // Iterate through the array
-      // docDefinition.content.forEach((element) => {
-      //   // Check if the element has a 'body' property and is an array
-      //   if (element.table && element.table.body) {
-      //     // Iterate through the 'body' array
-      //     element.table.body.forEach((innerArray) => {
-      //       // Remove 'M' from the inner array
-      //       removeElementFromArray(innerArray, 'empty');
-      //     });
-      //   }
-      // });
-      console.log('target', docDefinition.content)
-    }
+      docDefinition.content.splice(1, 0, { text: typeHeadings[tx.data.type], fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] })
+    
+      switch (tx.data.type) {
+        case 'send-ether':
+          docDefinition.content.splice(2, 0, {
+            table: {
+              widths: ['*', 'auto'],
+              body: [
+                ['Direction', 'Send ?'],
+                ['Value', String(tx.data.data.value)],
+                ['Recipient', tx.data.to],
+              ]
+            }
+          })
+          break;
+        case 'send-erc20-token':
+          docDefinition.content.splice(2, 0, {
+            table: {
+              widths: ['*', 'auto'],
+              body: [
+                ['Direction', 'Send ?'],
+                ['Contract', tx.data.data.contract],
+                ['Value',  tx.data.data.contractInfo && tx.data.data.contractInfo.decimals
+                ? new BigNumber(tx.data.data.value).dividedBy(Math.pow(10, tx.data.data.contractInfo.decimals)).dp(6).toString()
+                : new BigNumber(tx.data.data.value).dp(6).toString()],
+                ['Sender', tx.data.from],
+              ]
+            }
+          })
+          break;
+        case 'call':
+          break;
+        case 'deploy-contract':
+          break;
+        case 'message':
+          break;
+        case 'swap':
+          break;
+        case 'approval':
+          break;
+        case 'nft-trade':
+          break;
+        case 'send-nft':
+          const logs = tx.data.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
+          docDefinition.content.splice(2, 0, {
+            table: {
+              widths: ['*', 'auto'],
+              body: [
+                ['Direction', 'Send ?'],
+                ['Contract', logs[0]['contract']],
+                ['Sender', logs[0]['params']['from']],
+              ]
+            }
+          })
+          break;
+        case 'nft-mint':
+          break;
+        case 'lend':
+          break;
+        case 'redeem':
+          break;
+      }
+
+      if (tx.data.logs.length) {
+        docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
+        for (var i = 0; i < tx.data.logs.length; i++) {
+          docDefinition.content.push({
+            table: {
+              widths: [70, '*'],
+              body: [
+                ['Name', tx.data.logs[i].name],
+                ['Contract', tx.data.logs[i].contract],
+                ['Owner', tx.data.logs[i].params?.owner ? tx.data.logs[i].params.owner : null],
+                ['Spender', tx.data.logs[i].params?.spender ? tx.data.logs[i].params.spender : null],
+                ['Value', tx.data.logs[i].params?.value ? tx.data.logs[i].params.value : null],
+                ['Nft id', tx.data.logs[i].params?.nft_id ? tx.data.logs[i].params.nft_id : null],
+
+              ],
+
+            }
+          })
+          //docDefinition.content.push(['Owner', '111'] )
+
+          docDefinition.content.push(' ');
+
+
+        }
+      }
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
       const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
 
