@@ -8,12 +8,14 @@ const cors = require('cors')
 const PdfPrinter = require('pdfmake');
 const fs = require('fs');
 
+const BigNumber = require('bignumber.js');
+
 const path = require('path');
 router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
-    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x5efe17c690df82c5cbe078868ffafc2bdd78031a343c341471ac19c981ddef7c?blockchain=ethereum',
+    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591=ethereum',
     headers: customHeaders,
   };
   request(requestOptions, (error, response, body) => {
@@ -122,7 +124,7 @@ router.get('/generate', cors(), (req, res) => {
       }
 
       docDefinition.content.splice(1, 0, { text: typeHeadings[tx.data.type], fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] })
-    
+
       switch (tx.data.type) {
         case 'send-ether':
           docDefinition.content.splice(2, 0, {
@@ -143,15 +145,77 @@ router.get('/generate', cors(), (req, res) => {
               body: [
                 ['Direction', 'Send ?'],
                 ['Contract', tx.data.data.contract],
-                ['Value',  tx.data.data.contractInfo && tx.data.data.contractInfo.decimals
-                ? new BigNumber(tx.data.data.value).dividedBy(Math.pow(10, tx.data.data.contractInfo.decimals)).dp(6).toString()
-                : new BigNumber(tx.data.data.value).dp(6).toString()],
+                ['Value', tx.data.data.contractInfo && tx.data.data.contractInfo.decimals
+                  ? new BigNumber(tx.data.data.value).dividedBy(Math.pow(10, tx.data.data.contractInfo.decimals)).dp(6).toString()
+                  : new BigNumber(tx.data.data.value).dp(6).toString()],
                 ['Sender', tx.data.from],
               ]
             }
           })
           break;
         case 'call':
+          if (tx.data.logs.some(log => log.contractInfo)) {
+            docDefinition.content.push({ text: 'Transfers', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
+
+            const transfersList = tx.data.logs.filter(obj => obj.contractInfo)
+
+            console.log('transfersList', transfersList)
+            if (transfersList.length) {
+              // docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
+              console.log('transfersList', transfersList)
+              for (var i = 0; i < transfersList.length; i++) {
+                // Title transfer
+                if (transfersList[i].contractInfo.name) {
+                  docDefinition.content.push({ text: transfersList[i].contractInfo.name, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] })
+                } else {
+                  docDefinition.content.push({ text: transfersList[i].contractInfo.address, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] })
+                }
+                // Body transfer
+                if (transfersList[i].name === 'Transfer') {
+                  docDefinition.content.push({
+                    table: {
+                      widths: [70, '*'],
+                      body: [
+                        ['Direction', 'addressCurrent??'],
+                        ['Contract', transfersList[i].contractInfo.address],
+                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
+                        ['Recipient', transfersList[i].params.to],
+                      ]
+                    }
+                  })
+                } else if (transfersList[i].name === 'Deposit') {
+                  docDefinition.content.push({
+                    table: {
+                      widths: [70, '*'],
+                      body: [
+                        ['Direction', 'Received'],
+                        ['Contract', transfersList[i].contractInfo.address],
+                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
+                        ['Sender', transfersList[i].params.user],
+                      ]
+                    }
+                  })
+
+                } else if (transfersList[i].name === 'Withdrawal') {
+                  docDefinition.content.push({
+                    table: {
+                      widths: [70, '*'],
+                      body: [
+                        ['Direction', 'Sent'],
+                        ['Contract', transfersList[i].contractInfo.address],
+                        ['Value', calcLogEntryValue(transfersList[i]) + ' ' + transfersList[i].contractInfo.symbol],
+                        ['Recipient', transfersList[i].params.src],
+                      ]
+                    }
+                  })
+
+                }
+
+
+                docDefinition.content.push(' ');
+              }
+            }
+          }
           break;
         case 'deploy-contract':
           break;
@@ -202,13 +266,27 @@ router.get('/generate', cors(), (req, res) => {
 
             }
           })
-          //docDefinition.content.push(['Owner', '111'] )
 
           docDefinition.content.push(' ');
-
-
         }
       }
+
+      function calcLogEntryValue(logEntry) {
+        let field
+        switch (logEntry.name) {
+          case 'Transfer':
+            field = 'value'
+            break
+          case 'Deposit':
+            field = 'amount'
+            break
+          case 'Withdrawal':
+            field = 'wad'
+            break
+        }
+        return new BigNumber(logEntry.params[field]).dividedBy(Math.pow(10, logEntry.contractInfo.decimals || 0)).dp(6).toString()
+      }
+
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
       const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
 

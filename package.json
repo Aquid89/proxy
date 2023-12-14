@@ -6,14 +6,15 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
-  }, 
-  "engines":{
+  },
+  "engines": {
     "node": "18.x"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^9.1.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "jsdom": "^23.0.1",
