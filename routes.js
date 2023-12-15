@@ -15,7 +15,7 @@ router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
-    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x532cf15c85bb247b8944af27e5f60e006012d6ead898f3385d16373077f880f2=ethereum', 
+    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
     headers: customHeaders,
   };
   request(requestOptions, (error, response, body) => {
@@ -171,7 +171,7 @@ router.get('/generate', cors(), (req, res) => {
                 // Title transfer
                 const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
                 docDefinition.content.push({ text: titleText, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] });
-              
+
                 // Body transfer
                 let tableBody = [];
                 if (transfer.name === 'Transfer') {
@@ -196,7 +196,7 @@ router.get('/generate', cors(), (req, res) => {
                     ['Recipient', transfer.params.src],
                   ];
                 }
-              
+
                 if (tableBody.length > 0) {
                   docDefinition.content.push({
                     table: {
@@ -205,9 +205,19 @@ router.get('/generate', cors(), (req, res) => {
                     },
                   });
                 }
-              
+
                 docDefinition.content.push(' ');
               });
+
+              if (transfersList.some(l => l.name === 'Withdrawal')) {
+                docDefinition.content.push({ text: 'Ether', fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] });
+                docDefinition.content.push({
+                  table: {
+                    widths: [70, '*'],
+                    body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+                  }
+                })
+              }
             }
           }
           break;
@@ -255,17 +265,18 @@ router.get('/generate', cors(), (req, res) => {
         docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
         const logsFiltered = tx.data.logs.filter(l => l.name !== 'OpenSeaLog')
         logsFiltered.forEach(log => {
-          //console.log('log', log.params)
           const arrBodyTable = []
+          arrBodyTable.push(['Name', log.name])
+          arrBodyTable.push(['Contract', log.contract])
           Object.entries(log.params).forEach(([key, value]) => {
-            arrBodyTable.push([capitalize (key), value])
+            arrBodyTable.push([capitalize(key), value])
           });
           docDefinition.content.push({
             table: {
               widths: [70, '*'],
               body: arrBodyTable
             },
-          });  
+          });
           docDefinition.content.push(' ');
         });
       }
@@ -286,36 +297,64 @@ router.get('/generate', cors(), (req, res) => {
         return new BigNumber(logEntry.params[field]).dividedBy(Math.pow(10, logEntry.contractInfo.decimals || 0)).dp(6).toString()
       }
 
-      function capitalize (string) {
+      function capitalize(string) {
         return string.slice(0, 1).toUpperCase() + string.slice(1)
-    }
-
-    function isJsonString (str) {
-      try {
-          if (JSON.parse(str.message)?.moneyRequest) {
-              return true
-          }
-      } catch (e) {
-          return false
       }
-  }
 
-    function formatMessage (item, message = '', invisibleSpace) {
-      if (isJsonString(item)) {
+      function isJsonString(str) {
+        try {
+          if (JSON.parse(str.message)?.moneyRequest) {
+            return true
+          }
+        } catch (e) {
+          return false
+        }
+      }
+
+      function formatMessage(item, message = '', invisibleSpace) {
+        if (isJsonString(item)) {
           const moneyRequest = JSON.parse(item.message)
           message = moneyRequest.moneyRequest.text || ''
           message = message.length > 15
-              ? message.slice(0, 8) + '...'
-              : message || invisibleSpace
-      } else if (item.message) {
+            ? message.slice(0, 8) + '...'
+            : message || invisibleSpace
+        } else if (item.message) {
           message = item.message.length > 15
-              ? item.message.slice(0, 8) + '...'
-              : item.message
-      } else {
+            ? item.message.slice(0, 8) + '...'
+            : item.message
+        } else {
           return invisibleSpace
+        }
+        return message
       }
-      return message
-  }
+
+      function generalRounding(number, places = 6) {
+        let result, left, right
+        let string = String(number)
+
+        if (string.includes('e') || string === '') {
+          return number
+        }
+
+        if (string.includes('.')) {
+          left = string.split('.')[0]
+          right = string.split('.')[1]
+        } else {
+          left = string
+          right = ''
+        }
+
+        if (left.length > places) {
+          // metric prefixes
+          if (left.length <= 9) result = (left / Math.pow(10, 6)).toFixed(1) + ' ' + i18n.t('base.M')
+          else if (left.length <= 12) result = (left / Math.pow(10, 9)).toFixed(1) + ' ' + i18n.t('base.B')
+          else if (left.length <= 15) result = (left / Math.pow(10, 12)).toFixed(1) + ' ' + i18n.t('base.T')
+          else result = (left / Math.pow(10, 15)).toFixed(1) + ' ' + i18n.t('base.Q')
+        } else {
+          result = Number(left + '.' + right.slice(0, places - left.length))
+        }
+        return result
+      }
 
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
       const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));

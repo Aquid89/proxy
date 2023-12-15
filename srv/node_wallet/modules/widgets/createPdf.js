@@ -5,8 +5,11 @@ const BigNumber = require('bignumber.js');
 //const path = require('path');
 
 // @TODO remove backward compatibility
-const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
+const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) => {
+
+
   return new Promise((resolve, reject) => {
+    //console.log(timezone)
     if (Object.keys(app.config.blockchains).indexOf(blockchain) === -1) {
       return reject({
         error: 'Invalid blockchain',
@@ -68,15 +71,27 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                   'redeem': 'Redeem Tx'
                 }
 
-                function timeToStringLocal(time) {
-                  let stamp = time,
-                    date = new Date(stamp)
-                  return ('00' + date.getDate()).slice(-2) + '.' +
-                    ('00' + (date.getMonth() + 1)).slice(-2) + '.' +
-                    date.getFullYear() + ' ' +
-                    ('00' + date.getHours()).slice(-2) + ':' +
-                    ('00' + date.getMinutes()).slice(-2) + ':' +
-                    ('00' + date.getSeconds()).slice(-2)
+                function timeToStringLocal(time, localtime) {
+                  const offsetString = decodeURIComponent(localtime) 
+                  const offset = parseInt(offsetString, 10)
+                  const date = new Date(time)
+                  date.setUTCHours(date.getUTCHours() + offset)
+
+                  const pad = (num) => (num < 10 ? `0${num}` : num)
+                  const formattedDate =
+                    pad(date.getUTCDate()) +
+                    '.' +
+                    pad(date.getUTCMonth() + 1) +
+                    '.' +
+                    date.getUTCFullYear() +
+                    ' ' +
+                    pad(date.getUTCHours()) +
+                    ':' +
+                    pad(date.getUTCMinutes()) +
+                    ':' +
+                    pad(date.getUTCSeconds());
+
+                  return formattedDate
                 }
 
                 function status(status) {
@@ -102,7 +117,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                       table: {
                         widths: ['*', '*'],
                         body: [
-                          [timeToStringLocal(tx.timeStamp * 1000), status(tx.status)],
+                          [timeToStringLocal(tx.timeStamp * 1000, timezone), status(tx.status)],
                         ]
                       }
                     },
@@ -120,7 +135,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                           ['Gas Used', tx.gasUsed],
                           ['Gas Price', tx.gasPrice],
                           ['Fee', '0.000018??'],
-                          ['Input', tx?.input],
+                          ['Input', tx.input],
                         ]
                       }
                     }
@@ -128,36 +143,36 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                 }
 
                 docDefinition.content.splice(1, 0, { text: typeHeadings[tx.type], fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] })
-                
+
                 switch (tx.type) {
                   case 'send-ether':
                     docDefinition.content.splice(2, 0, {
                       table: {
                         widths: ['*', 'auto'],
                         body: [
-                          ['Direction', 'Send ?'],
+                          //['Direction', 'Send ?'],
                           ['Value', String(tx.data.value)],
                           ['Recipient', tx.to],
                         ]
                       }
                     })
-                    break;
+                    break
                   case 'send-erc20-token':
                     docDefinition.content.splice(2, 0, {
                       table: {
                         widths: ['*', 'auto'],
                         body: [
-                          ['Direction', 'Send ?'],
+                          //['Direction', 'Send ?'],
                           ['Contract', tx.data.contract],
                           ['Value', tx.data.contractInfo && tx.data.contractInfo.decimals
                             ? new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString()
                             : new BigNumber(tx.data.value).dp(6).toString()],
                           ['Sender', tx.from]
-                          ['Recipient', 'addressCurrent??']
+                         // ['Recipient', 'addressCurrent??']
                         ]
                       }
                     })
-                    break;
+                    break
                   case 'call':
                     if (tx.logs.some(log => log.contractInfo)) {
                       docDefinition.content.splice(2, 0, {
@@ -168,7 +183,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                           ]
                         }
                       })
-          
+
                       docDefinition.content.push({ text: 'Transfers', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
                       const transfersList = tx.logs.filter(obj => obj.contractInfo)
                       if (transfersList.length) {
@@ -176,12 +191,12 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                           // Title transfer
                           const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
                           docDefinition.content.push({ text: titleText, fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] });
-                        
+
                           // Body transfer
                           let tableBody = [];
                           if (transfer.name === 'Transfer') {
                             tableBody = [
-                              ['Direction', 'addressCurrent??'],
+                              //['Direction', 'addressCurrent??'],
                               ['Contract', transfer.contractInfo.address],
                               ['Value', calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
                               ['Recipient', transfer.params.to],
@@ -200,80 +215,93 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                               ['Value', calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
                               ['Recipient', transfer.params.src],
                             ];
-                          } 
-                        
+                          }
+
                           if (tableBody.length > 0) {
                             docDefinition.content.push({
                               table: {
                                 widths: [70, '*'],
                                 body: tableBody,
-                              },
-                            });
+                              }
+                            })
                           }
+
+                          docDefinition.content.push(' ')
+                        })
                         
-                          docDefinition.content.push(' ');
-                        });
+                        if (transfersList.some(l => l.name === 'Withdrawal')) {
+                          docDefinition.content.push({ text: 'Ether', fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 5] });
+                          docDefinition.content.push({
+                            table: {
+                              widths: [70, '*'],
+                              body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+                            }
+                          })
+                        }
                       }
                     }
-                    break;
+                    break
                   case 'deploy-contract':
-                    break;
+                    break
                   case 'message':
-                    break;
+                    break
                   case 'swap':
-                    break;
+                    break
                   case 'approval':
-                    break;
+                    break
                   case 'nft-trade':
-                    break;
+                    break
                   case 'send-nft':
                     const logs = tx.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
                     docDefinition.content.splice(2, 0, {
                       table: {
                         widths: ['*', 'auto'],
                         body: [
-                          ['Direction', 'Send ?'],
+                          //['Direction', 'Send ?'],
                           ['Contract', logs[0]['contract']],
                           ['Sender', logs[0]['params']['from']]
                         ]
                       }
                     })
-                    break;
+                    break
                   case 'nft-mint':
-                    break;
+                    break
                   case 'lend':
-                    break;
+                    break
                   case 'redeem':
-                    break;
+                    break
                 }
 
                 if (tx.logs.length) {
                   docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
-                 
+
                   const logsFiltered = tx.logs.filter(l => l.name !== 'OpenSeaLog')
-                 
+
                   logsFiltered.forEach(log => {
                     const arrBodyTable = []
-                 
+                    
+                    arrBodyTable.push(['Name', log.name])
+                    arrBodyTable.push(['Contract', log.contract]) 
+                    
                     Object.entries(log.params).forEach(([key, value]) => {
-                      arrBodyTable.push([capitalize (key), value])
+                      arrBodyTable.push([capitalize(key), value])
                     });
-                 
+
                     docDefinition.content.push({
                       table: {
                         widths: [70, '*'],
                         body: arrBodyTable
                       },
-                    });  
-                 
+                    });
+
                     docDefinition.content.push(' ')
                   });
                 }
 
-                function capitalize (string) {
+                function capitalize(string) {
                   return string.slice(0, 1).toUpperCase() + string.slice(1)
                 }
-                
+
                 function calcLogEntryValue(logEntry) {
                   let field
                   switch (logEntry.name) {
@@ -289,25 +317,34 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum' }) => {
                   }
                   return new BigNumber(logEntry.params[field]).dividedBy(Math.pow(10, logEntry.contractInfo.decimals || 0)).dp(6).toString()
                 }
-                // if (tx.logs.length) {
-                //   docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
-                //   for (var i = 0; i < tx.logs.length; i++) {
-                //     docDefinition.content.push({
-                //       table: {
-                //         widths: [70, '*'],
-                //         body: [
-                //           ['Name', tx.logs[i].name],
-                //           ['Contract', tx.logs[i].contract],
-                //           ['Owner', tx.logs[i].params.owner ? tx.logs[i].params.owner : null],
-                //           ['Spender', tx.logs[i].params.spender ? tx.logs[i].params.spender : null],
-                //           ['Value', tx.logs[i].params.value ? tx.logs[i].params.value : null],
-                //           ['Nft id', tx.logs[i].params.nft_id ? tx.logs[i].params.nft_id : null],
-                //         ]
-                //       }
-                //     })
-                //     docDefinition.content.push(' ')
-                //   }
-                // }
+
+                function generalRounding(number, places = 6) {
+                  let result, left, right
+                  let string = String(number)
+          
+                  if (string.includes('e') || string === '') {
+                    return number
+                  }
+          
+                  if (string.includes('.')) {
+                    left = string.split('.')[0]
+                    right = string.split('.')[1]
+                  } else {
+                    left = string
+                    right = ''
+                  }
+          
+                  if (left.length > places) {
+                    // metric prefixes
+                    if (left.length <= 9) result = (left / Math.pow(10, 6)).toFixed(1) + ' ' + i18n.t('base.M')
+                    else if (left.length <= 12) result = (left / Math.pow(10, 9)).toFixed(1) + ' ' + i18n.t('base.B')
+                    else if (left.length <= 15) result = (left / Math.pow(10, 12)).toFixed(1) + ' ' + i18n.t('base.T')
+                    else result = (left / Math.pow(10, 15)).toFixed(1) + ' ' + i18n.t('base.Q')
+                  } else {
+                    result = Number(left + '.' + right.slice(0, places - left.length))
+                  }
+                  return result
+                }
 
                 const pdfDoc = printer.createPdfKitDocument(docDefinition)
                 pdfDoc.pipe(fs.createWriteStream(`./pdf/${tx.type}.pdf`))
