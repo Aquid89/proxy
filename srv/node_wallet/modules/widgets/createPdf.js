@@ -60,9 +60,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   'send-ether': 'ETH Transaction',
                   'send-erc20-token': 'ERC20 Transaction',
                   'deploy-contract': 'Contract Deploy Tx',
-                  // 'message': this.tx && this.tx.data && isJsonString(this.tx.data) && this.tx.to.toLowerCase() === this.addressCurrent
-                  //     ? 'Invoice Tx'
-                  //     : 'Message Tx',
+                  'message': 'Some header?', 
                   'swap': 'Swap Transaction',
                   'nft-trade': 'NFT Trade Tx',
                   'send-nft': 'NFT Transaction',
@@ -244,6 +242,14 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   case 'deploy-contract':
                     break
                   case 'message':
+                    docDefinition.content.splice(2, 0, {
+                      table: {
+                        widths: [100, '*'],
+                        body: [
+                          ['Message', formatMessage(tx.data)]
+                        ]
+                      }
+                    })
                     break
                   case 'swap':
                     break
@@ -346,9 +352,38 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   return result
                 }
 
+                function isJsonString(str) {
+                  try {
+                    if (JSON.parse(str.message)?.moneyRequest) {
+                      return true
+                    }
+                  } catch (e) {
+                    return false
+                  }
+                }
+
+                function formatMessage(item, message = '', invisibleSpace) {
+                  if (isJsonString(item)) {
+                    const moneyRequest = JSON.parse(item.message)
+                    message = moneyRequest.moneyRequest.text || ''
+                    message = message.length > 15
+                      ? message.slice(0, 8) + '...'
+                      : message || invisibleSpace
+                  } else if (item.message) {
+                    message = item.message.length > 15
+                      ? item.message.slice(0, 8) + '...'
+                      : item.message
+                  } else {
+                    return invisibleSpace
+                  }
+                  return message
+                }
+
                 const pdfDoc = printer.createPdfKitDocument(docDefinition)
-                pdfDoc.pipe(fs.createWriteStream(`./pdf/${tx.type}.pdf`))
+                pdfDoc.pipe(fs.createWriteStream(`./public/pdf/${tx.hash}.pdf`))
                 pdfDoc.end()
+                // For dev
+                tx.link = `https://api-dev.sinum.io/pdf/${tx.hash}.pdf`
                 resolve(tx)
               })
           })

@@ -13,6 +13,7 @@ Sentry.init({
 let srv = express()
 srv.use(bodyParser.json({limit: '50mb', extended: true}))
 srv.use(bodyParser.urlencoded({ extended: true }))
+srv.use(express.static('public')); 
 
 srv.use((req, res, next) => {
     req.auth = {}

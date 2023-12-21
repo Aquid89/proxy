@@ -5,17 +5,20 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const cors = require('cors')
 
+
 const PdfPrinter = require('pdfmake');
 const fs = require('fs');
 
 const BigNumber = require('bignumber.js');
 
+const Contract = require('./contract.js');
+const QRCode = require('qrcode');
 const path = require('path');
 router.get('/generate', cors(), (req, res) => {
   var customHeaders = {
   };
   var requestOptions = {
-    url: 'https://api-dev-full.sinum.io/widgets/explorer/transaction/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
+    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
     headers: customHeaders,
   };
   request(requestOptions, (error, response, body) => {
@@ -43,63 +46,27 @@ router.get('/generate', cors(), (req, res) => {
         'lend': 'Lend Tx',
         'redeem': 'Redeem Tx'
       }
-
-      function timeToStringLocal(time) {
-        let stamp = time,
-          date = new Date(stamp)
-
-        return ('00' + date.getDate()).slice(-2) + '.' +
-          ('00' + (date.getMonth() + 1)).slice(-2) + '.' +
-          date.getFullYear() + ' ' +
-          ('00' + date.getHours()).slice(-2) + ':' +
-          ('00' + date.getMinutes()).slice(-2) + ':' +
-          ('00' + date.getSeconds()).slice(-2)
-      }
-      function status(status) {
-        if (status === undefined) {
-          return 'Pending'
-        } else {
-          if (status === 0) {
-            return 'Failed'
-          } else if (status === 1) {
-            return 'Confirmed'
-          } else {
-            return 'Unknown'
-          }
+      QRCode.toDataURL('Your Data Here', (err, qrCodeURL) => {
+        if (err) {
+          console.error('Error generating QR code:', err);
+          return res.status(500).send('Internal Server Error');
         }
-      }
-      // function generateLogs(logs) {
-      //   const arr = {
-      //     table: {
-      //       widths: ['*', 'auto'],
-
-      //       body: [['Input', '?']],
-      //     },
-      //     table: {
-      //       widths: ['*', 'auto'],
-
-      //       body: [['Input', '?']],
-      //     }
-
-
-      //   }
-      //   return arr
-      // }
       const printer = new PdfPrinter(fonts);
       const docDefinition = {
         content: [
           {
             margin: [0, 0, 0, 20],
             table: {
-              widths: ['*', '*'],
+              widths: ['*', '*', '*'],
 
               body: [
-                [timeToStringLocal(tx.data.timeStamp * 1000), status(tx.data.status)],
+                [timeToStringLocal(tx.data.timeStamp * 1000), status(tx.data.status), {image: qrCodeURL}],
               ]
             }
           },
           { text: 'Transaction Data', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] },
           {
+            fontSize: 10,
             table: {
               widths: ['*', 'auto'],
 
@@ -110,11 +77,11 @@ router.get('/generate', cors(), (req, res) => {
                 ['Block', tx.data.blockNumber],
                 ['Hash', tx.data.hash],
                 ['Nonce', tx.data.nonce],
-                ['Value', tx.data.value],
+                ['Value', tx.data.value + ' ETH'],
                 ['Gas Used', tx.data.gasUsed],
                 ['Gas Price', tx.data.gasPrice],
                 ['Fee', '0.000018 ?'],
-                ['Input', tx.data.input + '?'],
+                ['Input', tx.data.input],
               ]
             }
           },
@@ -261,26 +228,15 @@ router.get('/generate', cors(), (req, res) => {
           break;
       }
 
-      if (tx.data.logs.length) {
-        docDefinition.content.push({ text: 'Full Logs', fontSize: 15, alignment: 'center', bold: true, margin: [0, 30, 20, 20] })
-        const logsFiltered = tx.data.logs.filter(l => l.name !== 'OpenSeaLog')
-        logsFiltered.forEach(log => {
-          const arrBodyTable = []
-          arrBodyTable.push(['Name', log.name])
-          arrBodyTable.push(['Contract', log.contract])
-          Object.entries(log.params).forEach(([key, value]) => {
-            arrBodyTable.push([capitalize(key), value])
-          });
-          docDefinition.content.push({
-            table: {
-              widths: [70, '*'],
-              body: arrBodyTable
-            },
-          });
-          docDefinition.content.push(' ');
-        });
-      }
+   
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
+      const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
 
+      pdfDoc.pipe(fs.createWriteStream('document.pdf'));
+      pdfDoc.pipe(res);
+
+      pdfDoc.end();
+    })
       function calcLogEntryValue(logEntry) {
         let field
         switch (logEntry.name) {
@@ -355,27 +311,31 @@ router.get('/generate', cors(), (req, res) => {
         }
         return result
       }
+      function timeToStringLocal(time) {
+        let stamp = time,
+          date = new Date(stamp)
 
-      const pdfDoc = printer.createPdfKitDocument(docDefinition);
-      const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
-
-      //pdfDoc.pipe(fileStream);
-
-      // fileStream.on('finish', () => {
-      //   res.download('document.pdf', () => {
-      //     const filePath = path.resolve('document.pdf');
-      //     fs.unlink(filePath, (err) => {
-      //       if (err) {
-      //         console.error(err);
-      //       }
-      //     });
-      //   });
-
-      // });
-      pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-      pdfDoc.pipe(res);
-
-      pdfDoc.end();
+        return ('00' + date.getDate()).slice(-2) + '.' +
+          ('00' + (date.getMonth() + 1)).slice(-2) + '.' +
+          date.getFullYear() + ' ' +
+          ('00' + date.getHours()).slice(-2) + ':' +
+          ('00' + date.getMinutes()).slice(-2) + ':' +
+          ('00' + date.getSeconds()).slice(-2)
+      }
+      function status(status) {
+        if (status === undefined) {
+          return 'Pending'
+        } else {
+          if (status === 0) {
+            return 'Failed'
+          } else if (status === 1) {
+            return 'Confirmed'
+          } else {
+            return 'Unknown'
+          }
+        }
+      }
+  
 
       // res.send();
     } else {

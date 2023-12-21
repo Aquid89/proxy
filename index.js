@@ -4,6 +4,7 @@ var app = express();
 
 var router = require('./routes');
 app.use(router)
+app.use(express.static('public'));
 // app.get('/api', (req, res)=>{ 
 //    // console.log(req.query.url)
 //       // Определите новые заголовки, которые вы хотите добавить
