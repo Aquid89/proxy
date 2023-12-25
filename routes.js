@@ -100,7 +100,7 @@ router.get('/generate', cors(), (req, res) => {
 
               layout: 'noBorders'
             },
-            { text: makeUpperCase('Transaction receipt' + ' ' + tx.type), fontSize: 12, marginTop: -40 },
+            { text: makeUpperCase('Transaction receipt' + ' For dev:' + tx.type), fontSize: 12, marginTop: -40 },
             { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 15, color: '#9483FF', marginTop: 8 },
             { text: timeToStringLocal(tx.timeStamp * 1000, timezone), fontSize: 10, marginTop: 8 },
             {
@@ -113,6 +113,7 @@ router.get('/generate', cors(), (req, res) => {
                 { text: tx.hash, color: '#000', fontSize: 10 }, // текст белого цвета
               ], marginTop: -40, marginBottom: 20
             },
+            headerBlock('Transaction data'),
             {
               table: {
                 widths: [45, 500],
@@ -133,11 +134,7 @@ router.get('/generate', cors(), (req, res) => {
               layout: 'noBorders',
               fontSize: 10
             },
-            { text: makeUpperCase('Input'), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' },
-            {
-              image: bgImg, width: 550,
-              height: 0.5, marginBottom: 5
-            },
+            headerBlock('Input'),
             { text: tx.input, fontSize: 10 }
           ]
 
@@ -147,10 +144,7 @@ router.get('/generate', cors(), (req, res) => {
 
         switch (tx.type) {
           case 'send-ether':
-            docDefinition.content.splice(-6, 0, { text: makeUpperCase('Transaction Data'), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
-              image: bgImg, width: 550,
-              height: 0.5, marginBottom: 5
-            }, {
+            docDefinition.content.splice(6, 0, headerBlock('Transaction data'), {
               table: {
                 widths: ['*'],
                 // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
@@ -485,6 +479,12 @@ router.get('/generate', cors(), (req, res) => {
       }
       function makeUpperCase(text) {
         return text.toUpperCase()
+      }
+      function headerBlock (text) {
+       return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
+        image: bgImg, width: 550,
+        height: 0.5, marginBottom: 5
+      }]
       }
       // res.send();
     } else {
