@@ -25,14 +25,17 @@ router.get('/generate', cors(), (req, res) => {
     //send-ether
     //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xcbbb58de3e7a85dea8e04525228da198618e36677c53e3172bb22e613008039d?blockchain=ethereum',
     //call
-    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
+    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
    //message
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
    // message invoice object
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
    //send-erc20-token
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
+    //swap
+   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
   
+   
   };
   request(requestOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
@@ -231,130 +234,21 @@ router.get('/generate', cors(), (req, res) => {
             // })
             break
           case 'call':
-            let callArr = []
-            if (tx.logs.some(log => log.contractInfo)) {
-              const transfersList = tx.logs.filter(obj => obj.contractInfo)
-              if (transfersList.length) {
-                transfersList.forEach(transfer => {
-                  // Title transfer
-                  const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
-
-                  // Body transfer
-                  let tableBody = [];
-                  if (transfer.name === 'Transfer') {
-                    tableBody = [
-                      //['Direction', 'addressCurrent??'],
-                      [transfer.contractInfo.address],
-                      [{
-                        image: arrowImg,
-                        width: 5,
-                        height: 10,
-                      }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
-                      [{
-                        image: arrowImg,
-                        width: 5,
-                        height: 10,
-                      }],
-                      [transfer.params.to],
-                    ];
-                  } else if (transfer.name === 'Deposit') {
-                    tableBody = [
-                      [transfer.contractInfo.address],
-                      [{
-                        image: arrowImg,
-                        width: 5, // устанавливаем ширину изображения
-                        height: 10,
-                      }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
-                      [{
-                        image: arrowImg,
-                        width: 5, // устанавливаем ширину изображения
-                        height: 10,
-                      }],
-                      [transfer.params.user],
-                    ];
-                  } else if (transfer.name === 'Withdrawal') {
-                    tableBody = [
-                      [transfer.contractInfo.address],
-                      [{
-                        image: arrowImg,
-                        width: 5, // устанавливаем ширину изображения
-                        height: 10,
-                      }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
-                      [{
-                        image: arrowImg,
-                        width: 5, // устанавливаем ширину изображения
-                        height: 10,
-                      }],
-                      [transfer.params.src],
-                    ];
-                  }
-
-                  if (tableBody.length > 0) {
-                    callArr.push(headerBlock ("Token transfer"),
-                      {
-                      table: {
-                        widths: ['*'],
-                        body: tableBody,
-                        alignment: 'center'
-                      },
-                      style: 'tableStyle',
-                      layout: 'noBorders'
-                    })
-
-                  }
-
-                  //   docDefinition.content.push(' ')
-                })
-
-                if (transfersList.some(l => l.name === 'Withdrawal')) {
-                  callArr.push(headerBlock ("Ether"), {
-                    table: {
-                      widths: ['*'],
-                      // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
-                      body: [
-                        [tx.from],
-                        [{
-                          image: arrowImg,
-                          width: 5, // устанавливаем ширину изображения
-                          height: 10,
-                        }],
-                        [generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + 'ETH'],
-                        [{
-                          image: arrowImg,
-                          width: 5, // устанавливаем ширину изображения
-                          height: 10,
-                        }],
-                        [transfersList.filter(l => l.name === 'Withdrawal')[0].params.src],
-                      ]
-                    },
-                    style: 'tableStyle',
-                    layout: 'noBorders'
-                  })
-                }
-
-                callArr.push(headerBlock('Smart Contract Method'),
-                {
-                  table: {
-                    widths: [50, 495],
-                    body: [
-                      [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4 }],
-                      // ['Input', tx.input],
-                    ]
-                  },
-                  layout: 'noBorders',
-                  fontSize: 10
-                })
-
-                docDefinition.content.splice(-4,0, callArr)
-
-             
-          
-              }
-            }
+            let callData = generateTransaction()
+            callData.push(headerBlock('Smart Contract Method'),
+            {
+              table: {
+                widths: [50, 495],
+                body: [
+                  [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4 }],
+                ]
+              },
+              layout: 'noBorders',
+              fontSize: 10
+            })
+            docDefinition.content.splice(-4,0, callData)
+           
             break
           case 'deploy-contract':
             break
@@ -545,6 +439,116 @@ router.get('/generate', cors(), (req, res) => {
       }
       function roundedNumber(number) {
         return number.toFixed(6).replace(/\.?0+$/, '');
+      }
+
+      function generateTransaction (){
+        let callArr = []
+        if (tx.logs.some(log => log.contractInfo)) {
+          const transfersList = tx.logs.filter(obj => obj.contractInfo)
+          if (transfersList.length) {
+            transfersList.forEach(transfer => {
+              // Title transfer
+              const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
+
+              // Body transfer
+              let tableBody = [];
+              if (transfer.name === 'Transfer') {
+                tableBody = [
+                  //['Direction', 'addressCurrent??'],
+                  [transfer.contractInfo.address],
+                  [{
+                    image: arrowImg,
+                    width: 5,
+                    height: 10,
+                  }],
+                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{
+                    image: arrowImg,
+                    width: 5,
+                    height: 10,
+                  }],
+                  [transfer.params.to],
+                ];
+              } else if (transfer.name === 'Deposit') {
+                tableBody = [
+                  [transfer.contractInfo.address],
+                  [{
+                    image: arrowImg,
+                    width: 5, // устанавливаем ширину изображения
+                    height: 10,
+                  }],
+                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{
+                    image: arrowImg,
+                    width: 5, // устанавливаем ширину изображения
+                    height: 10,
+                  }],
+                  [transfer.params.user],
+                ];
+              } else if (transfer.name === 'Withdrawal') {
+                tableBody = [
+                  [transfer.contractInfo.address],
+                  [{
+                    image: arrowImg,
+                    width: 5, // устанавливаем ширину изображения
+                    height: 10,
+                  }],
+                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{
+                    image: arrowImg,
+                    width: 5, // устанавливаем ширину изображения
+                    height: 10,
+                  }],
+                  [transfer.params.src],
+                ];
+              }
+
+              if (tableBody.length > 0) {
+                callArr.push(headerBlock ("Token transfer"),
+                  {
+                  table: {
+                    widths: ['*'],
+                    body: tableBody,
+                    alignment: 'center'
+                  },
+                  style: 'tableStyle',
+                  layout: 'noBorders'
+                })
+
+              }
+
+              //   docDefinition.content.push(' ')
+            })
+
+            if (transfersList.some(l => l.name === 'Withdrawal')) {
+              callArr.push(headerBlock ("Ether"), {
+                table: {
+                  widths: ['*'],
+                  // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+                  body: [
+                    [tx.from],
+                    [{
+                      image: arrowImg,
+                      width: 5, // устанавливаем ширину изображения
+                      height: 10,
+                    }],
+                    [generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + 'ETH'],
+                    [{
+                      image: arrowImg,
+                      width: 5, // устанавливаем ширину изображения
+                      height: 10,
+                    }],
+                    [transfersList.filter(l => l.name === 'Withdrawal')[0].params.src],
+                  ]
+                },
+                style: 'tableStyle',
+                layout: 'noBorders'
+              })
+            }
+          
+           return callArr
+          }
+        }
       }
       // res.send();
     } else {
