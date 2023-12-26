@@ -34,6 +34,11 @@ router.get('/generate', cors(), (req, res) => {
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
     //swap
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
+   //approval
+   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xf6cd1d55be3daf1b67480666a3012f2fbf1c18d03bd722b2513082adf8880d53=ethereum',
+   //redeem
+   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
+
   
    
   };
@@ -47,7 +52,7 @@ router.get('/generate', cors(), (req, res) => {
         Roboto: {
           normal: 'fonts/Roboto-Regular.ttf',
           bold: 'fonts/Roboto-Bold.ttf',
-
+          italics: 'fonts/Roboto-Mono.ttf',
         }
       };
 
@@ -91,7 +96,7 @@ router.get('/generate', cors(), (req, res) => {
             },
             tableStyle: {
               alignment: 'center',
-            },
+            }
           },
           content: [
             {
@@ -123,7 +128,7 @@ router.get('/generate', cors(), (req, res) => {
             {
               text: [
                 { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6 }, // текст белого цвета
-                { text: tx.hash, color: '#000', fontSize: 10 }, // текст белого цвета
+                { text: tx.hash,  fontSize: 10,  italics: true }, // текст белого цвета
               ], marginTop: -40, marginBottom: 20
             },
             headerBlock('Transaction data'),
@@ -131,10 +136,10 @@ router.get('/generate', cors(), (req, res) => {
               table: {
                 widths: [45, 500],
                 body: [
-                  [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4,  italics: true}],
+                  [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true}],
                   [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4,  italics: true}],
                   [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Value' }, { text: tx.value, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Gas Used' }, { text: tx.gasUsed, alignment: 'right', marginBottom: 4 }],
@@ -148,7 +153,7 @@ router.get('/generate', cors(), (req, res) => {
               fontSize: 10
             },
             headerBlock('Input'),
-            { text: tx.input, fontSize: 10 }
+            { text: tx.input, fontSize: 10, italics: true }
           ]
 
         }
@@ -275,8 +280,34 @@ router.get('/generate', cors(), (req, res) => {
 
             break
           case 'swap':
+            let swapData = generateTransaction()
+            swapData.push(headerBlock('Swap Info'),
+            {
+              table: {
+                widths: [50, 495],
+                body: [
+                  [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
+                ]
+              },
+              layout: 'noBorders',
+              fontSize: 10
+            })
+            docDefinition.content.splice(-4,0, swapData)
             break
           case 'approval':
+            docDefinition.content.splice(-4,0,headerBlock('Token Approval Info'),
+            {
+              table: {
+                widths: [70, 470],
+                body: [
+                  [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'New Allowance' }, { text: value()+symbol(), alignment: 'right', marginBottom: 4 }],
+                ]
+              },
+              layout: 'noBorders',
+              fontSize: 10
+            })
             break
           case 'nft-trade':
             break
@@ -325,6 +356,19 @@ router.get('/generate', cors(), (req, res) => {
           case 'lend':
             break
           case 'redeem':
+            docDefinition.content.splice(-4,0,headerBlock('Redeem Info'),
+            {
+              table: {
+                widths: [70, 470],
+                body: [
+                  [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Protocol' }, { text:capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                ]
+              },
+              layout: 'noBorders',
+              fontSize: 10
+            })
             break
         }
 
@@ -440,6 +484,23 @@ router.get('/generate', cors(), (req, res) => {
       function roundedNumber(number) {
         return number.toFixed(6).replace(/\.?0+$/, '');
       }
+      
+      function capitalizeFirstLetter(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
+
+      function value() {
+        if (tx.data.contractInfo && tx.data.contractInfo.decimals) {
+            return new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString()
+        } else {
+            return new BigNumber(String(tx.data.value)).dp(6)
+        }
+    } 
+    function symbol() {
+        return tx.data.contractInfo && tx.data.contractInfo.symbol
+            ? tx.data.contractInfo.symbol
+            : ''
+    }
 
       function generateTransaction (){
         let callArr = []
