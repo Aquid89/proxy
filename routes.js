@@ -25,23 +25,24 @@ router.get('/generate', cors(), (req, res) => {
     //send-ether
     //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xcbbb58de3e7a85dea8e04525228da198618e36677c53e3172bb22e613008039d?blockchain=ethereum',
     //call
-    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
    //message
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
    // message invoice object
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
    //send-erc20-token
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
+   url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
     //swap
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
+  // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
    //approval
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xf6cd1d55be3daf1b67480666a3012f2fbf1c18d03bd722b2513082adf8880d53=ethereum',
    //redeem
    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
-
-  
-   
-  };
+   //lend
+  //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x138e18cbce0b8b46c6fcbbf06987bcd01ea865b3c1ba0661141656c902df4846=ethereum',
+  //send-nft
+  //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x6e15500dee8ec125ff971afbf05bea535d069afe2fcaa1c24ab4e723991e3dbb=ethereum',
+};
   request(requestOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       let tx = JSON.parse(body).data;
@@ -57,18 +58,18 @@ router.get('/generate', cors(), (req, res) => {
       };
 
       const typeHeadings = {
-        'approval': 'Token Approval Tx',
-        'call': 'Call Transaction',
-        'send-ether': 'ETH Transaction',
-        'send-erc20-token': 'ERC20 Transaction',
-        'deploy-contract': 'Contract Deploy Tx',
-        'message': 'Message Tx',
+        'approval': 'Token Approval transaction',
+        'call': 'Call transaction',
+        'send-ether': 'ETH transaction',
+        'send-erc20-token': 'ERC20 transaction',
+        'deploy-contract': 'Contract Deploy transaction',
+        'message': 'Message transaction',
         'swap': 'Swap Transaction',
-        'nft-trade': 'NFT Trade Tx',
-        'send-nft': 'NFT Transaction',
+        'nft-trade': 'NFT Trade transaction',
+        'send-nft': 'NFT transaction',
         'nft-mint': 'NFT Mint',
-        'lend': 'Lend Tx',
-        'redeem': 'Redeem Tx'
+        'lend': 'Lend transaction',
+        'redeem': 'Redeem transaction'
       }
 
       QRCode.toDataURL(`https://etherscan.io/tx/${tx.hash}`, { errorCorrectionLevel: 'L', width: 84 }, (err, qrCodeURL) => {
@@ -80,7 +81,7 @@ router.get('/generate', cors(), (req, res) => {
 
         const docDefinition = {
           pageSize: 'A4',
-          pageMargins: [20, 10, 20, 20],
+          pageMargins: [50, 26, 26, 26],
           styles: {
             hyperlink: {
               decoration: 'underline',
@@ -102,17 +103,18 @@ router.get('/generate', cors(), (req, res) => {
             {
               margin: [0, 0, 0, 20],
               table: {
-                widths: ['*', '*', '*'],
+                widths: ['*',  '*'],
                 body: [
                   [{
                     image: logoImg,
                     width: 75, // устанавливаем ширину изображения
                     height: 20,
-                  }, {
-                    text: 'explorer.sinum.app',
-                    link: 'http://explorer.sinum.app',
-                    style: 'hyperlink'
-                  }, { image: qrCodeURL, style: 'qrcode' }],
+                  }, { image: qrCodeURL, style: 'qrcode' }]
+                  // }, {
+                  //   text: 'explorer.sinum.app',
+                  //   link: 'http://explorer.sinum.app',
+                  //   style: 'hyperlink'
+                  // }, { image: qrCodeURL, style: 'qrcode' }],
                 ]
               },
 
@@ -120,10 +122,10 @@ router.get('/generate', cors(), (req, res) => {
             },
             { text: makeUpperCase('Transaction receipt' + ' For dev:' + tx.type), fontSize: 12, marginTop: -40 },
             { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 15, color: '#9483FF', marginTop: 8 },
-            { text: timeToStringLocal(tx.timeStamp * 1000, timezone), fontSize: 10, marginTop: 8 },
+            { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' GMT' + timezone, fontSize: 10, marginTop: 8 },
             {
               image: bgImg, width: 600,
-              height: 50, marginLeft: -20, marginRight: -20, marginTop: 20
+              height: 50, marginLeft: -50, marginRight: -25, marginTop: 20
             },
             {
               text: [
@@ -134,17 +136,17 @@ router.get('/generate', cors(), (req, res) => {
             headerBlock('Transaction data'),
             {
               table: {
-                widths: [45, 500],
+                widths: [45, '*'],
                 body: [
                   [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4,  italics: true}],
                   [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true}],
                   [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4,  italics: true}],
                   [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Value' }, { text: tx.value, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Gas Used' }, { text: tx.gasUsed, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Gas Price' }, { text: tx.gasPrice, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Fee' }, { text: '?', alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4 }],
 
                   // ['Input', tx.input],
                 ]
@@ -153,7 +155,7 @@ router.get('/generate', cors(), (req, res) => {
               fontSize: 10
             },
             headerBlock('Input'),
-            { text: tx.input, fontSize: 10, italics: true }
+            { text: shortenHash(tx.input, 255), fontSize: 10, italics: true }
           ]
 
         }
@@ -167,7 +169,7 @@ router.get('/generate', cors(), (req, res) => {
                 widths: ['*'],
                 // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
                 body: [
-                  [tx.from],
+                  [{text:tx.from, italics: true}],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
@@ -179,7 +181,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [tx.to],
+                  [{text:tx.to, italics: true}],
                 ]
               },
               style: 'tableStyle',
@@ -201,23 +203,19 @@ router.get('/generate', cors(), (req, res) => {
                 widths: ['*'],
                 // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
                 body: [
-                  [tx.from],
+                  [{text:tx.from, italics: true}],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [tx.data.contractInfo && tx.data.contractInfo.decimals
-                    ? new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString() + tx.data.contractInfo && tx.data.contractInfo.symbol
-                    ? tx.data.contractInfo.symbol
-                    : ''
-                    : new BigNumber(tx.data.value).dp(6).toString() + 'ETH'],
+                  [value() +' ' + tx.data.contractInfo.symbol],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [tx.data.to],
+                  [{text: tx.data.to, italics: true}],
                 ]
               },
               style: 'tableStyle',
@@ -243,10 +241,10 @@ router.get('/generate', cors(), (req, res) => {
             callData.push(headerBlock('Smart Contract Method'),
             {
               table: {
-                widths: [50, 495],
+                widths: [50, '*'],
                 body: [
-                  [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
                 ]
               },
               layout: 'noBorders',
@@ -270,7 +268,7 @@ router.get('/generate', cors(), (req, res) => {
             docDefinition.content.splice(6, 0, headerBlock(parseStringToObject(tx.data.message)? 'Invoice' : 'Message'), {
               
               table: {
-                widths: [!parseStringToObject(tx.data.message)? '*': 50, 495],
+                widths: [!parseStringToObject(tx.data.message)? '*': 50, '*'],
                 body: tableBodyMessage
               },
               layout: 'noBorders',
@@ -284,7 +282,7 @@ router.get('/generate', cors(), (req, res) => {
             swapData.push(headerBlock('Swap Info'),
             {
               table: {
-                widths: [50, 495],
+                widths: [50, '*'],
                 body: [
                   [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
@@ -299,10 +297,10 @@ router.get('/generate', cors(), (req, res) => {
             docDefinition.content.splice(-4,0,headerBlock('Token Approval Info'),
             {
               table: {
-                widths: [70, 470],
+                widths: [70, '*'],
                 body: [
                   [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'New Allowance' }, { text: value()+symbol(), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'New Allowance' }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
                 ]
               },
               layout: 'noBorders',
@@ -313,27 +311,24 @@ router.get('/generate', cors(), (req, res) => {
             break
           case 'send-nft':
             const logs = tx.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
-            docDefinition.content.splice(-6, 0, { text: makeUpperCase('Transaction Data'), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
-              image: bgImg, width: 550,
-              height: 0.5, marginBottom: 5
-            }, {
+            docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer'), {
               table: {
                 widths: ['*'],
                 // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
                 body: [
-                  [logs[0]['params']['from']],
+                  [{text: logs[0]['params']['from'], italics:true}],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  ['?' + 'ETH'],
+                  ['Key?'],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [logs[0]['contract']],
+                  [{text: logs[0]['contract'], italics: true}],
                 ]
               },
               style: 'tableStyle',
@@ -354,12 +349,27 @@ router.get('/generate', cors(), (req, res) => {
           case 'nft-mint':
             break
           case 'lend':
+            let lendData = generateTransaction()
+            docDefinition.content.splice(-4,0, lendData)
+            docDefinition.content.splice(-4,0,headerBlock('Lend Info'),
+            {
+              table: {
+                widths: [70, '*'],
+                body: [
+                  [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Protocol' }, { text:capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                ]
+              },
+              layout: 'noBorders',
+              fontSize: 10
+            })
             break
           case 'redeem':
             docDefinition.content.splice(-4,0,headerBlock('Redeem Info'),
             {
               table: {
-                widths: [70, 470],
+                widths: [70, '*'],
                 body: [
                   [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
@@ -469,7 +479,7 @@ router.get('/generate', cors(), (req, res) => {
       }
       function headerBlock (text) {
        return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
-        image: bgImg, width: 550,
+        image: bgImg, width: 518,
         height: 0.5, marginBottom: 5
       }]
       }
@@ -502,6 +512,34 @@ router.get('/generate', cors(), (req, res) => {
             : ''
     }
 
+    function shortenHash (string, maxLength = 7) {
+      if (!string) {
+        return;
+    }
+    string = string.toLowerCase();
+    if (string.length <= maxLength) {
+        return string;
+    }
+    return string.slice(0, maxLength) + '...';
+  }
+  function ethToGwei(value) {
+    // Форматируем значение с тремя знаками после запятой
+    const formattedValue = (value / 1e9).toFixed(3);
+  
+    return formattedValue + ' Gwei';
+  }
+  function calculateTransactionFee(gasPrice, gasUsed) {
+    const fee = gasPrice * gasUsed;
+    const weiPerEth = 1e18;
+
+    // Выполняем конвертацию
+    const ethValue = fee / weiPerEth;
+    return ethValue.toFixed(6) + ' ETH';
+  }
+  function isHexadecimal(str) {
+    const hexRegex = /^[0-9A-Fa-f]+$/g;
+    return hexRegex.test(str);
+  }
       function generateTransaction (){
         let callArr = []
         if (tx.logs.some(log => log.contractInfo)) {
@@ -516,7 +554,7 @@ router.get('/generate', cors(), (req, res) => {
               if (transfer.name === 'Transfer') {
                 tableBody = [
                   //['Direction', 'addressCurrent??'],
-                  [transfer.contractInfo.address],
+                  [{text:transfer.contractInfo.address, italics: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -528,11 +566,11 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [transfer.params.to],
+                  [{text:transfer.params.to, italics: true}],
                 ];
               } else if (transfer.name === 'Deposit') {
                 tableBody = [
-                  [transfer.contractInfo.address],
+                  [{text:transfer.contractInfo.address, italics: true}],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
@@ -544,11 +582,11 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [transfer.params.user],
+                  [{text:transfer.params.user, italics: true}],
                 ];
               } else if (transfer.name === 'Withdrawal') {
                 tableBody = [
-                  [transfer.contractInfo.address],
+                  [{text:transfer.contractInfo.address, italics: true}],
                   [{
                     image: arrowImg,
                     width: 5, // устанавливаем ширину изображения
@@ -560,7 +598,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5, // устанавливаем ширину изображения
                     height: 10,
                   }],
-                  [transfer.params.src],
+                  [{text:transfer.params.src, italics: true}],
                 ];
               }
 
@@ -587,7 +625,7 @@ router.get('/generate', cors(), (req, res) => {
                   widths: ['*'],
                   // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
                   body: [
-                    [tx.from],
+                    [{text:tx.from, italics: true}],
                     [{
                       image: arrowImg,
                       width: 5, // устанавливаем ширину изображения
@@ -599,7 +637,7 @@ router.get('/generate', cors(), (req, res) => {
                       width: 5, // устанавливаем ширину изображения
                       height: 10,
                     }],
-                    [transfersList.filter(l => l.name === 'Withdrawal')[0].params.src],
+                    [{text:transfersList.filter(l => l.name === 'Withdrawal')[0].params.src, italics: true}],
                   ]
                 },
                 style: 'tableStyle',
