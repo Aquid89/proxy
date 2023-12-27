@@ -111,23 +111,23 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                       [{
                         image: logoImg,
                         width: 75,
-                        height: 20,
+                        height: 23,
                       }, { image: qrCodeURL, style: 'qrcode' }]
                     ]
                   },
     
                   layout: 'noBorders'
                 },
-                { text: makeUpperCase('Transaction receipt' + ' For dev:' + tx.type), fontSize: 12, marginTop: -40 },
-                { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 15, color: '#9483FF', marginTop: 8 },
-                { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' GMT' + timezone, fontSize: 10, marginTop: 8 },
+                { text: makeUpperCase('Transaction receipt'), fontSize: 12, marginTop: -40 },
+                { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 20, color: '#9483FF', marginTop: 8 },
+                { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' (GMT' + timezone + ')', fontSize: 10, marginTop: 8 },
                 {
                   image: bgImg, width: 600,
                   height: 50, marginLeft: -50, marginRight: -25, marginTop: 20
                 },
                 {
                   text: [
-                    { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6 },
+                    { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6, bold: true },
                     { text: tx.hash, fontSize: 10, italics: true },
                   ], marginTop: -40, marginBottom: 20
                 },
@@ -138,16 +138,16 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                     body: [
                       [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
                       [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4, italics: true}],
                       [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4, italics: true}],
+                      [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4, italics: true }],
     
                     ]
-                  },
+                  }, 
                   layout: 'noBorders',
                   fontSize: 10
                 },
@@ -159,7 +159,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
     
             switch (tx.type) {
               case 'send-ether':
-                docDefinition.content.splice(6, 0, headerBlock('Transaction data'), {
+                docDefinition.content.splice(6, 0, headerBlock('Coin Transfer'), {
                   table: {
                     widths: ['*'],
     
@@ -184,7 +184,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 })
                 break
               case 'send-erc20-token':
-                docDefinition.content.splice(6, 0, headerBlock('Transaction data'), {
+                docDefinition.content.splice(6, 0, headerBlock('Token Transfer'), {
                   table: {
                     widths: ['*'],
     
@@ -232,8 +232,8 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 let tableBodyMessage = []
     
                 if (parseStringToObject(tx.data.message)) {
-                  tableBodyMessage.push([{ text: 'Amount' }, { text: roundedNumber(parseStringToObject(tx.data.message).moneyRequest.amount) + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right' }],
-                    [{ text: 'Comment' }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right' }])
+                  tableBodyMessage.push([{ text: 'Amount' }, { text: parseStringToObject(tx.data.message).moneyRequest.amount + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right', italics: true}],
+                    [{ text: 'Comment' }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right',italics: true }])
                 } else {
                   tableBodyMessage.push([{ text: tx.data.message, alignment: 'left' }])
                 }
@@ -329,19 +329,22 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   })
                 break
               case 'redeem':
-                docDefinition.content.splice(-4, 0, headerBlock('Redeem Info'),
-                  {
-                    table: {
-                      widths: [70, '*'],
-                      body: [
-                        [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
-                      ]
-                    },
-                    layout: 'noBorders',
-                    fontSize: 10
-                  })
+                let redeemData = generateTransaction()
+                redeemData.push(headerBlock('Redeem Info'),
+                {
+                  table: {
+                    widths: [70, '*'],
+                    body: [
+                      [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                    ]
+                  },
+                  layout: 'noBorders',
+                  fontSize: 10
+                })
+                docDefinition.content.splice(-4, 0, redeemData)
+    
                 break
             }
 
@@ -409,7 +412,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
           }
     
           function headerBlock(text) {
-            return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
+            return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E', bold: true }, {
               image: bgImg, width: 518,
               height: 0.5, marginBottom: 5
             }]
