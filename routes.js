@@ -12,7 +12,6 @@ const fs = require('fs');
 
 const BigNumber = require('bignumber.js');
 
-const Contract = require('./contract.js');
 const QRCode = require('qrcode');
 const path = require('path');
 
@@ -25,24 +24,24 @@ router.get('/generate', cors(), (req, res) => {
     //send-ether
     //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xcbbb58de3e7a85dea8e04525228da198618e36677c53e3172bb22e613008039d?blockchain=ethereum',
     //call
-    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
-   //message
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
-   // message invoice object
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
-   //send-erc20-token
-   url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
+    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
+    //message
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
+    // message invoice object
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
+    //send-erc20-token
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
     //swap
-  // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
-   //approval
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xf6cd1d55be3daf1b67480666a3012f2fbf1c18d03bd722b2513082adf8880d53=ethereum',
-   //redeem
-   //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
-   //lend
-  //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x138e18cbce0b8b46c6fcbbf06987bcd01ea865b3c1ba0661141656c902df4846=ethereum',
-  //send-nft
-  //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x6e15500dee8ec125ff971afbf05bea535d069afe2fcaa1c24ab4e723991e3dbb=ethereum',
-};
+    // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xfcf4f5efc92f782af80f3a29698c77dc620a989fccf2e29179612217bef45a97?blockchain=ethereum',
+    //approval
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xf6cd1d55be3daf1b67480666a3012f2fbf1c18d03bd722b2513082adf8880d53=ethereum',
+    //redeem
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
+    //lend
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x138e18cbce0b8b46c6fcbbf06987bcd01ea865b3c1ba0661141656c902df4846=ethereum',
+    //send-nft
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x6e15500dee8ec125ff971afbf05bea535d069afe2fcaa1c24ab4e723991e3dbb=ethereum',
+  };
   request(requestOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       let tx = JSON.parse(body).data;
@@ -103,18 +102,13 @@ router.get('/generate', cors(), (req, res) => {
             {
               margin: [0, 0, 0, 20],
               table: {
-                widths: ['*',  '*'],
+                widths: ['*', '*'],
                 body: [
                   [{
                     image: logoImg,
-                    width: 75, // устанавливаем ширину изображения
+                    width: 75,
                     height: 20,
                   }, { image: qrCodeURL, style: 'qrcode' }]
-                  // }, {
-                  //   text: 'explorer.sinum.app',
-                  //   link: 'http://explorer.sinum.app',
-                  //   style: 'hyperlink'
-                  // }, { image: qrCodeURL, style: 'qrcode' }],
                 ]
               },
 
@@ -129,8 +123,8 @@ router.get('/generate', cors(), (req, res) => {
             },
             {
               text: [
-                { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6 }, // текст белого цвета
-                { text: tx.hash,  fontSize: 10,  italics: true }, // текст белого цвета
+                { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6 },
+                { text: tx.hash, fontSize: 10, italics: true },
               ], marginTop: -40, marginBottom: 20
             },
             headerBlock('Transaction data'),
@@ -138,17 +132,16 @@ router.get('/generate', cors(), (req, res) => {
               table: {
                 widths: [45, '*'],
                 body: [
-                  [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4,  italics: true}],
-                  [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true}],
+                  [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
                   [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4,  italics: true}],
+                  [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
                   [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4 }],
                   [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4 }],
 
-                  // ['Input', tx.input],
                 ]
               },
               layout: 'noBorders',
@@ -160,115 +153,91 @@ router.get('/generate', cors(), (req, res) => {
 
         }
 
-        // docDefinition.content.splice(1, 0, { text: typeHeadings[tx.type], fontSize: 15, alignment: 'center', bold: true, margin: [0, 0, 20, 20] })
-
         switch (tx.type) {
           case 'send-ether':
             docDefinition.content.splice(6, 0, headerBlock('Transaction data'), {
               table: {
                 widths: ['*'],
-                // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+
                 body: [
-                  [{text:tx.from, italics: true}],
+                  [{ text: tx.from, italics: true }],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
                   [String(tx.data.value) + 'ETH'],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [{text:tx.to, italics: true}],
+                  [{ text: tx.to, italics: true }],
                 ]
               },
               style: 'tableStyle',
               layout: 'noBorders'
             })
-            // docDefinition.content.splice(2, 0, {
-            //   table: {
-            //     widths: ['*', 'auto'],
-            //     body: [
-            //       ['Value', String(tx.data.value)],
-            //       ['Recipient', tx.to],
-            //     ]
-            //   }
-            // })
             break
           case 'send-erc20-token':
             docDefinition.content.splice(6, 0, headerBlock('Transaction data'), {
               table: {
                 widths: ['*'],
-                // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+
                 body: [
-                  [{text:tx.from, italics: true}],
+                  [{ text: tx.from, italics: true }],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [value() +' ' + tx.data.contractInfo.symbol],
+                  [value() + ' ' + tx.data.contractInfo.symbol],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [{text: tx.data.to, italics: true}],
+                  [{ text: tx.data.to, italics: true }],
                 ]
               },
               style: 'tableStyle',
               layout: 'noBorders'
             })
-            // docDefinition.content.splice(2, 0, {
-            //   table: {
-            //     widths: ['*', 'auto'],
-            //     body: [
-            //       //['Direction', 'Send ?'],
-            //       ['Contract', tx.data.contract],
-            //       ['Value', tx.data.contractInfo && tx.data.contractInfo.decimals
-            //         ? new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString()
-            //         : new BigNumber(tx.data.value).dp(6).toString()],
-            //       ['Sender', tx.from]
-            //       // ['Recipient', 'addressCurrent??']
-            //     ]
-            //   }
-            // })
+
             break
           case 'call':
             let callData = generateTransaction()
             callData.push(headerBlock('Smart Contract Method'),
-            {
-              table: {
-                widths: [50, '*'],
-                body: [
-                  [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
-                ]
-              },
-              layout: 'noBorders',
-              fontSize: 10
-            })
-            docDefinition.content.splice(-4,0, callData)
-           
+              {
+                table: {
+                  widths: [50, '*'],
+                  body: [
+                    [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                    [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
+                  ]
+                },
+                layout: 'noBorders',
+                fontSize: 10
+              })
+            docDefinition.content.splice(-4, 0, callData)
+
             break
           case 'deploy-contract':
             break
           case 'message':
             let tableBodyMessage = []
 
-            if(parseStringToObject(tx.data.message)){
-              tableBodyMessage.push([{text: 'Amount'},{ text: roundedNumber(parseStringToObject(tx.data.message).moneyRequest.amount) + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right' }], 
-              [{text: 'Comment'},{ text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right' }])
+            if (parseStringToObject(tx.data.message)) {
+              tableBodyMessage.push([{ text: 'Amount' }, { text: roundedNumber(parseStringToObject(tx.data.message).moneyRequest.amount) + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right' }],
+                [{ text: 'Comment' }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right' }])
             } else {
               tableBodyMessage.push([{ text: tx.data.message, alignment: 'left' }])
             }
-            
-            docDefinition.content.splice(6, 0, headerBlock(parseStringToObject(tx.data.message)? 'Invoice' : 'Message'), {
-              
+
+            docDefinition.content.splice(6, 0, headerBlock(parseStringToObject(tx.data.message) ? 'Invoice' : 'Message'), {
+
               table: {
-                widths: [!parseStringToObject(tx.data.message)? '*': 50, '*'],
+                widths: [!parseStringToObject(tx.data.message) ? '*' : 50, '*'],
                 body: tableBodyMessage
               },
               layout: 'noBorders',
@@ -280,32 +249,32 @@ router.get('/generate', cors(), (req, res) => {
           case 'swap':
             let swapData = generateTransaction()
             swapData.push(headerBlock('Swap Info'),
-            {
-              table: {
-                widths: [50, '*'],
-                body: [
-                  [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
-                ]
-              },
-              layout: 'noBorders',
-              fontSize: 10
-            })
-            docDefinition.content.splice(-4,0, swapData)
+              {
+                table: {
+                  widths: [50, '*'],
+                  body: [
+                    [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
+                  ]
+                },
+                layout: 'noBorders',
+                fontSize: 10
+              })
+            docDefinition.content.splice(-4, 0, swapData)
             break
           case 'approval':
-            docDefinition.content.splice(-4,0,headerBlock('Token Approval Info'),
-            {
-              table: {
-                widths: [70, '*'],
-                body: [
-                  [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'New Allowance' }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
-                ]
-              },
-              layout: 'noBorders',
-              fontSize: 10
-            })
+            docDefinition.content.splice(-4, 0, headerBlock('Token Approval Info'),
+              {
+                table: {
+                  widths: [70, '*'],
+                  body: [
+                    [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'New Allowance' }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
+                  ]
+                },
+                layout: 'noBorders',
+                fontSize: 10
+              })
             break
           case 'nft-trade':
             break
@@ -314,71 +283,61 @@ router.get('/generate', cors(), (req, res) => {
             docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer'), {
               table: {
                 widths: ['*'],
-                // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+
                 body: [
-                  [{text: logs[0]['params']['from'], italics:true}],
+                  [{ text: logs[0]['params']['from'], italics: true }],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
                   ['Key?'],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [{text: logs[0]['contract'], italics: true}],
+                  [{ text: logs[0]['contract'], italics: true }],
                 ]
               },
               style: 'tableStyle',
               layout: 'noBorders'
             })
-            // const logs = tx.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
-            // docDefinition.content.splice(2, 0, {
-            //   table: {
-            //     widths: ['*', 'auto'],
-            //     body: [
-            //       //['Direction', 'Send ?'],
-            //       ['Contract', logs[0]['contract']],
-            //       ['Sender', logs[0]['params']['from']]
-            //     ]
-            //   }
-            // })
+
             break
           case 'nft-mint':
             break
           case 'lend':
             let lendData = generateTransaction()
-            docDefinition.content.splice(-4,0, lendData)
-            docDefinition.content.splice(-4,0,headerBlock('Lend Info'),
-            {
-              table: {
-                widths: [70, '*'],
-                body: [
-                  [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Protocol' }, { text:capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
-                ]
-              },
-              layout: 'noBorders',
-              fontSize: 10
-            })
+            docDefinition.content.splice(-4, 0, lendData)
+            docDefinition.content.splice(-4, 0, headerBlock('Lend Info'),
+              {
+                table: {
+                  widths: [70, '*'],
+                  body: [
+                    [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                  ]
+                },
+                layout: 'noBorders',
+                fontSize: 10
+              })
             break
           case 'redeem':
-            docDefinition.content.splice(-4,0,headerBlock('Redeem Info'),
-            {
-              table: {
-                widths: [70, '*'],
-                body: [
-                  [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Protocol' }, { text:capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
-                ]
-              },
-              layout: 'noBorders',
-              fontSize: 10
-            })
+            docDefinition.content.splice(-4, 0, headerBlock('Redeem Info'),
+              {
+                table: {
+                  widths: [70, '*'],
+                  body: [
+                    [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                  ]
+                },
+                layout: 'noBorders',
+                fontSize: 10
+              })
             break
         }
 
@@ -390,32 +349,6 @@ router.get('/generate', cors(), (req, res) => {
 
         pdfDoc.end();
       })
-      function formatMessage(item, message = '', invisibleSpace) {
-        if (isJsonString(item)) {
-          const moneyRequest = JSON.parse(item.message)
-          message = moneyRequest.moneyRequest.text || ''
-          message = message.length > 15
-            ? message.slice(0, 8) + '...'
-            : message || invisibleSpace
-        } else if (item.message) {
-          message = item.message.length > 15
-            ? item.message.slice(0, 8) + '...'
-            : item.message
-        } else {
-          return invisibleSpace
-        }
-        return message
-      }
-
-      function isJsonString(str) {
-        try {
-          if (JSON.parse(str.message)?.moneyRequest) {
-            return true
-          }
-        } catch (e) {
-          return false
-        }
-      }
 
       function generalRounding(number, places = 6) {
         let result, left, right
@@ -434,7 +367,6 @@ router.get('/generate', cors(), (req, res) => {
         }
 
         if (left.length > places) {
-          // metric prefixes
           if (left.length <= 9) result = (left / Math.pow(10, 6)).toFixed(1) + ' ' + i18n.t('base.M')
           else if (left.length <= 12) result = (left / Math.pow(10, 9)).toFixed(1) + ' ' + i18n.t('base.B')
           else if (left.length <= 15) result = (left / Math.pow(10, 12)).toFixed(1) + ' ' + i18n.t('base.T')
@@ -461,28 +393,17 @@ router.get('/generate', cors(), (req, res) => {
         return new BigNumber(logEntry.params[field]).dividedBy(Math.pow(10, logEntry.contractInfo.decimals || 0)).dp(6).toString()
       }
 
-      function status(status) {
-        if (status === undefined) {
-          return 'Pending'
-        } else {
-          if (status === 0) {
-            return 'Failed'
-          } else if (status === 1) {
-            return 'Confirmed'
-          } else {
-            return 'Unknown'
-          }
-        }
-      }
       function makeUpperCase(text) {
         return text.toUpperCase()
       }
-      function headerBlock (text) {
-       return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
-        image: bgImg, width: 518,
-        height: 0.5, marginBottom: 5
-      }]
+
+      function headerBlock(text) {
+        return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E' }, {
+          image: bgImg, width: 518,
+          height: 0.5, marginBottom: 5
+        }]
       }
+
       function parseStringToObject(str) {
         try {
           const obj = JSON.parse(str);
@@ -491,56 +412,59 @@ router.get('/generate', cors(), (req, res) => {
           return false;
         }
       }
+
       function roundedNumber(number) {
         return number.toFixed(6).replace(/\.?0+$/, '');
       }
-      
+
       function capitalizeFirstLetter(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
       }
 
       function value() {
         if (tx.data.contractInfo && tx.data.contractInfo.decimals) {
-            return new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString()
+          return new BigNumber(tx.data.value).dividedBy(Math.pow(10, tx.data.contractInfo.decimals)).dp(6).toString()
         } else {
-            return new BigNumber(String(tx.data.value)).dp(6)
+          return new BigNumber(String(tx.data.value)).dp(6)
         }
-    } 
-    function symbol() {
+      }
+      function symbol() {
         return tx.data.contractInfo && tx.data.contractInfo.symbol
-            ? tx.data.contractInfo.symbol
-            : ''
-    }
+          ? tx.data.contractInfo.symbol
+          : ''
+      }
 
-    function shortenHash (string, maxLength = 7) {
-      if (!string) {
-        return;
-    }
-    string = string.toLowerCase();
-    if (string.length <= maxLength) {
-        return string;
-    }
-    return string.slice(0, maxLength) + '...';
-  }
-  function ethToGwei(value) {
-    // Форматируем значение с тремя знаками после запятой
-    const formattedValue = (value / 1e9).toFixed(3);
-  
-    return formattedValue + ' Gwei';
-  }
-  function calculateTransactionFee(gasPrice, gasUsed) {
-    const fee = gasPrice * gasUsed;
-    const weiPerEth = 1e18;
+      function shortenHash(string, maxLength = 7) {
+        if (!string) {
+          return;
+        }
+        string = string.toLowerCase();
+        if (string.length <= maxLength) {
+          return string;
+        }
+        return string.slice(0, maxLength) + '...';
+      }
 
-    // Выполняем конвертацию
-    const ethValue = fee / weiPerEth;
-    return ethValue.toFixed(6) + ' ETH';
-  }
-  function isHexadecimal(str) {
-    const hexRegex = /^[0-9A-Fa-f]+$/g;
-    return hexRegex.test(str);
-  }
-      function generateTransaction (){
+      function ethToGwei(value) {
+        const formattedValue = (value / 1e9).toFixed(3);
+
+        return formattedValue + ' Gwei';
+      }
+
+      function calculateTransactionFee(gasPrice, gasUsed) {
+        const fee = gasPrice * gasUsed;
+        const weiPerEth = 1e18;
+
+        const ethValue = fee / weiPerEth;
+        return ethValue.toFixed(6) + ' ETH';
+      }
+
+      function isHexadecimal(str) {
+        const hexRegex = /^[0-9A-Fa-f]+$/g;
+        return hexRegex.test(str);
+      }
+
+      function generateTransaction() {
         let callArr = []
         if (tx.logs.some(log => log.contractInfo)) {
           const transfersList = tx.logs.filter(obj => obj.contractInfo)
@@ -549,12 +473,10 @@ router.get('/generate', cors(), (req, res) => {
               // Title transfer
               const titleText = transfer.contractInfo.name ? transfer.contractInfo.name : transfer.contractInfo.address;
 
-              // Body transfer
               let tableBody = [];
               if (transfer.name === 'Transfer') {
                 tableBody = [
-                  //['Direction', 'addressCurrent??'],
-                  [{text:transfer.contractInfo.address, italics: true}],
+                  [{ text: transfer.contractInfo.address, italics: true }],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -566,86 +488,84 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [{text:transfer.params.to, italics: true}],
+                  [{ text: transfer.params.to, italics: true }],
                 ];
               } else if (transfer.name === 'Deposit') {
                 tableBody = [
-                  [{text:transfer.contractInfo.address, italics: true}],
+                  [{ text: transfer.contractInfo.address, italics: true }],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
                   [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [{text:transfer.params.user, italics: true}],
+                  [{ text: transfer.params.user, italics: true }],
                 ];
               } else if (transfer.name === 'Withdrawal') {
                 tableBody = [
-                  [{text:transfer.contractInfo.address, italics: true}],
+                  [{ text: transfer.contractInfo.address, italics: true }],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
                   [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
                   [{
                     image: arrowImg,
-                    width: 5, // устанавливаем ширину изображения
+                    width: 5,
                     height: 10,
                   }],
-                  [{text:transfer.params.src, italics: true}],
+                  [{ text: transfer.params.src, italics: true }],
                 ];
               }
 
               if (tableBody.length > 0) {
-                callArr.push(headerBlock ("Token transfer"),
+                callArr.push(headerBlock("Token transfer"),
                   {
-                  table: {
-                    widths: ['*'],
-                    body: tableBody,
-                    alignment: 'center'
-                  },
-                  style: 'tableStyle',
-                  layout: 'noBorders'
-                })
+                    table: {
+                      widths: ['*'],
+                      body: tableBody,
+                      alignment: 'center'
+                    },
+                    style: 'tableStyle',
+                    layout: 'noBorders'
+                  })
 
               }
-
-              //   docDefinition.content.push(' ')
             })
 
             if (transfersList.some(l => l.name === 'Withdrawal')) {
-              callArr.push(headerBlock ("Ether"), {
+              callArr.push(headerBlock("Ether"), {
                 table: {
                   widths: ['*'],
-                  // body: [['Direction', 'Received'], ['Value', generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + ' ETH'], ['Sender', transfersList.filter(l => l.name === 'Withdrawal')[0].params.src]]
+
                   body: [
-                    [{text:tx.from, italics: true}],
+                    [{ text: tx.from, italics: true }],
                     [{
                       image: arrowImg,
-                      width: 5, // устанавливаем ширину изображения
+                      width: 5,
                       height: 10,
                     }],
                     [generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + 'ETH'],
                     [{
                       image: arrowImg,
-                      width: 5, // устанавливаем ширину изображения
+                      width: 5,
                       height: 10,
                     }],
-                    [{text:transfersList.filter(l => l.name === 'Withdrawal')[0].params.src, italics: true}],
+                    [{ text: transfersList.filter(l => l.name === 'Withdrawal')[0].params.src, italics: true }],
                   ]
                 },
                 style: 'tableStyle',
                 layout: 'noBorders'
               })
             }
-          
-           return callArr
+
+            return callArr
           }
         }
       }
