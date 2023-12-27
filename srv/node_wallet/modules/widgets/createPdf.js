@@ -57,7 +57,11 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
               normal: 'fonts/Roboto-Regular.ttf',
               bold: 'fonts/Roboto-Bold.ttf',
               italics: 'fonts/Roboto-Mono.ttf',
-            }
+            },
+            Poppins: {
+              normal: 'fonts/Poppins-Regular.ttf',
+              bold: 'fonts/Poppins-Medium.ttf',
+            } 
           };
     
           const typeHeadings = {
@@ -118,48 +122,47 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
     
                   layout: 'noBorders'
                 },
-                { text: makeUpperCase('Transaction receipt'), fontSize: 12, marginTop: -40 },
-                { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 20, color: '#9483FF', marginTop: 8 },
-                { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' (GMT' + timezone + ')', fontSize: 10, marginTop: 8 },
+                { text: makeUpperCase('Transaction receipt'), fontSize: 12, marginTop: -40, font: 'Poppins', bold: true }, 
+                { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 20, color: '#9483FF', marginTop: 8,  font: 'Poppins',  bold: true },
+                { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' (GMT' + timezone + ')', fontSize: 10, marginTop: 8, font: 'Poppins' },
                 {
                   image: bgImg, width: 600,
                   height: 50, marginLeft: -50, marginRight: -25, marginTop: 20
                 },
                 {
                   text: [
-                    { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6, bold: true },
+                    { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.4, font: 'Poppins',  bold: true },
                     { text: tx.hash, fontSize: 10, italics: true },
-                  ], marginTop: -40, marginBottom: 20
+                  ], marginTop: -42, marginBottom: 20
                 },
                 headerBlock('Transaction data'),
                 {
                   table: {
-                    widths: [45, '*'],
+                    widths: [50, '*'],
                     body: [
-                      [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4, italics: true}],
-                      [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4, italics: true}],
-                      [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4, italics: true }],
-                      [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'From', alignment: 'left', font: 'Poppins' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'To', font: 'Poppins' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Block', font: 'Poppins' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4, italics: true}],
+                      [{ text: 'Hash', font: 'Poppins' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Nonce', font: 'Poppins' }, { text: tx.nonce, alignment: 'right', marginBottom: 4, italics: true}],
+                      [{ text: 'Value', font: 'Poppins' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Gas Used', font: 'Poppins' }, { text: tx.gas, alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Gas Price', font: 'Poppins' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4, italics: true }],
+                      [{ text: 'Fee', font: 'Poppins' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4, italics: true }],
     
                     ]
-                  }, 
+                  },
                   layout: 'noBorders',
                   fontSize: 10
                 },
                 headerBlock('Input'),
                 { text: shortenHash(tx.input, 255), fontSize: 10, italics: true }
               ]
-    
             }
     
             switch (tx.type) {
               case 'send-ether':
-                docDefinition.content.splice(6, 0, headerBlock('Coin Transfer'), {
+                docDefinition.content.splice(6, 0, headerBlock('Coin Transfer', 11), {
                   table: {
                     widths: ['*'],
     
@@ -170,7 +173,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                         width: 5,
                         height: 10,
                       }],
-                      [String(tx.data.value) + 'ETH'],
+                      [{text: String(tx.data.value) + 'ETH', font: "Poppins", bold: true}],
                       [{
                         image: arrowImg,
                         width: 5,
@@ -184,7 +187,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 })
                 break
               case 'send-erc20-token':
-                docDefinition.content.splice(6, 0, headerBlock('Token Transfer'), {
+                docDefinition.content.splice(6, 0, headerBlock('Token Transfer', 11), {
                   table: {
                     widths: ['*'],
     
@@ -195,7 +198,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                         width: 5,
                         height: 10,
                       }],
-                      [value() + ' ' + tx.data.contractInfo.symbol],
+                      [{text:value() + ' ' + tx.data.contractInfo.symbol, font: "Poppins", bold: true}],
                       [{
                         image: arrowImg,
                         width: 5,
@@ -216,8 +219,8 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                     table: {
                       widths: [50, '*'],
                       body: [
-                        [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
-                        [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
+                        [{ text: 'Smart Contract', alignment: 'left', font: "Poppins" }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                        [{ text: 'Method', font: "Poppins" }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
                       ]
                     },
                     layout: 'noBorders',
@@ -232,16 +235,16 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 let tableBodyMessage = []
     
                 if (parseStringToObject(tx.data.message)) {
-                  tableBodyMessage.push([{ text: 'Amount' }, { text: parseStringToObject(tx.data.message).moneyRequest.amount + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right', italics: true}],
-                    [{ text: 'Comment' }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right',italics: true }])
+                  tableBodyMessage.push([{ text: 'Amount', font: "Poppins" }, { text: parseStringToObject(tx.data.message).moneyRequest.amount + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right', italics: true}],
+                    [{ text: 'Comment', font: "Poppins" }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right',italics: true }])
                 } else {
-                  tableBodyMessage.push([{ text: tx.data.message, alignment: 'left' }])
+                  tableBodyMessage.push([{ text: tx.data.message, alignment: 'left', font: "Poppins"}])
                 }
     
                 docDefinition.content.splice(6, 0, headerBlock(parseStringToObject(tx.data.message) ? 'Invoice' : 'Message'), {
     
                   table: {
-                    widths: [!parseStringToObject(tx.data.message) ? '*' : 50, '*'],
+                    widths: [!parseStringToObject(tx.data.message) ? '*' : 55, '*'],
                     body: tableBodyMessage
                   },
                   layout: 'noBorders',
@@ -255,10 +258,10 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 swapData.push(headerBlock('Swap Info'),
                   {
                     table: {
-                      widths: [50, '*'],
+                      widths: [55, '*'],
                       body: [
-                        [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Blockchain', alignment: 'left', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Exchange', font: "Poppins" }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
                       ]
                     },
                     layout: 'noBorders',
@@ -270,10 +273,10 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 docDefinition.content.splice(-4, 0, headerBlock('Token Approval Info'),
                   {
                     table: {
-                      widths: [70, '*'],
+                      widths: [80, '*'],
                       body: [
-                        [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'New Allowance' }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Token', alignment: 'left', font: "Poppins" }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'New Allowance', font: "Poppins" }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
                       ]
                     },
                     layout: 'noBorders',
@@ -284,7 +287,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 break
               case 'send-nft':
                 const logs = tx.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
-                docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer'), {
+                docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer', 11), {
                   table: {
                     widths: ['*'],
     
@@ -319,9 +322,9 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                     table: {
                       widths: [70, '*'],
                       body: [
-                        [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                        [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Amount', alignment: 'left', font: "Poppins" }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Blockchain', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                        [{ text: 'Protocol', font: "Poppins" }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
                       ]
                     },
                     layout: 'noBorders',
@@ -335,16 +338,15 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   table: {
                     widths: [70, '*'],
                     body: [
-                      [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                      [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Amount', alignment: 'left', font: "Poppins" }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Blockchain', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                      [{ text: 'Protocol', font: "Poppins" }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
                     ]
                   },
                   layout: 'noBorders',
                   fontSize: 10
                 })
                 docDefinition.content.splice(-4, 0, redeemData)
-    
                 break
             }
 
@@ -354,14 +356,6 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 // For dev
                 tx.link = `https://api-dev.sinum.io/pdf/${tx.hash}.pdf`
                 resolve(tx)
-    
-            // const pdfDoc = printer.createPdfKitDocument(docDefinition);
-            // const fileStream = pdfDoc.pipe(fs.createWriteStream('./pdf/document.pdf'));
-    
-            // pdfDoc.pipe(fs.createWriteStream('document.pdf'));
-            // pdfDoc.pipe(res);
-    
-            // pdfDoc.end();
           })
 
           function generalRounding(number, places = 6) {
@@ -411,12 +405,12 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
             return text.toUpperCase()
           }
     
-          function headerBlock(text) {
-            return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E', bold: true }, {
+          function headerBlock(text, size = 10) {
+            return [{ text: makeUpperCase(text), fontSize: size, margin: [0, 20, 0, 6], color: '#442A8E',  font: 'Poppins',  bold: true }, {
               image: bgImg, width: 518,
               height: 0.5, marginBottom: 5
             }]
-          }
+          } 
     
           function parseStringToObject(str) {
             try {
@@ -496,7 +490,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                         width: 5,
                         height: 10,
                       }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                      [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                       [{
                         image: arrowImg,
                         width: 5,
@@ -512,7 +506,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                         width: 5,
                         height: 10,
                       }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                      [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                       [{
                         image: arrowImg,
                         width: 5,
@@ -528,7 +522,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                         width: 5,
                         height: 10,
                       }],
-                      [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                      [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                       [{
                         image: arrowImg,
                         width: 5,
@@ -539,7 +533,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                   }
     
                   if (tableBody.length > 0) {
-                    callArr.push(headerBlock("Token transfer"),
+                    callArr.push(headerBlock("Token transfer", 12),
                       {
                         table: {
                           widths: ['*'],
@@ -554,7 +548,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                 })
     
                 if (transfersList.some(l => l.name === 'Withdrawal')) {
-                  callArr.push(headerBlock("Ether"), {
+                  callArr.push(headerBlock("Token Transfer", 11), {
                     table: {
                       widths: ['*'],
     
@@ -565,7 +559,7 @@ const getTransaction = ({ tx }, { blockchain = 'ethereum', timezone = '%30' }) =
                           width: 5,
                           height: 10,
                         }],
-                        [generalRounding(calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0])) + 'ETH'],
+                        [{text: calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0]) + 'ETH', font: "Poppins", bold: true}],
                         [{
                           image: arrowImg,
                           width: 5,

@@ -22,13 +22,13 @@ const logoImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVAAAABkCAYAAADQd
 router.get('/generate', cors(), (req, res) => {
   const requestOptions = {
     //send-ether
-    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xcbbb58de3e7a85dea8e04525228da198618e36677c53e3172bb22e613008039d?blockchain=ethereum',
+    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xcbbb58de3e7a85dea8e04525228da198618e36677c53e3172bb22e613008039d?blockchain=ethereum',
     //call
-    ///url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
+    // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x2cc0421ad8657aa9d39aa288bafdccd4c30d902d636d57612ab699018b3e9591?blockchain=ethereum',
     //message
-    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
+   // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xe2e0b305cddef4cfa401b5ad900a2cd0201f20bd240cdcd8ac0c41180be0d440?blockchain=ethereum',
     // message invoice object
-    //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
+   // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x979be4afc6e687206a69b6668fa381e776275ba9812ed9ca49ae4601267d9996?blockchain=ethereum',
     //send-erc20-token
    // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x4fbaea5b47c46452effbaf265162817ee7e6317c27f7f192350a18c6bf1988d5?blockchain=ethereum',
     //swap
@@ -36,7 +36,7 @@ router.get('/generate', cors(), (req, res) => {
     //approval
     //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xf6cd1d55be3daf1b67480666a3012f2fbf1c18d03bd722b2513082adf8880d53=ethereum',
     //redeem
-   // url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
+    url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0xceee9671816375bd4c887c3010299f6eae2202606a9ff3917570372e26ffe8e9=ethereum',
     //lend
     //url: 'https://api-dev.sinum.io/widgets/explorer/transaction-pdf/0x138e18cbce0b8b46c6fcbbf06987bcd01ea865b3c1ba0661141656c902df4846=ethereum',
     //send-nft
@@ -55,7 +55,8 @@ router.get('/generate', cors(), (req, res) => {
           italics: 'fonts/Roboto-Mono.ttf',
         },
         Poppins: {
-          normal: 'fonts/Poppins-Medium.ttf',
+          normal: 'fonts/Poppins-Regular.ttf',
+          bold: 'fonts/Poppins-Medium.ttf',
         } 
       };
 
@@ -117,33 +118,33 @@ router.get('/generate', cors(), (req, res) => {
 
               layout: 'noBorders'
             },
-            { text: makeUpperCase('Transaction receipt' + ' For dev:' + tx.type), fontSize: 12, marginTop: -40, font: 'Poppins' },
-            { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 20, color: '#9483FF', marginTop: 8 },
-            { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' (GMT' + timezone + ')', fontSize: 10, marginTop: 8 },
+            { text: makeUpperCase('Transaction receipt'), fontSize: 12, marginTop: -40, font: 'Poppins', bold: true }, 
+            { text: makeUpperCase(typeHeadings[tx.type]), fontSize: 20, color: '#9483FF', marginTop: 8,  font: 'Poppins',  bold: true },
+            { text: timeToStringLocal(tx.timeStamp * 1000, timezone) + ' (GMT' + timezone + ')', fontSize: 10, marginTop: 8, font: 'Poppins' },
             {
               image: bgImg, width: 600,
               height: 50, marginLeft: -50, marginRight: -25, marginTop: 20
             },
             {
               text: [
-                { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.6, bold: true },
+                { text: makeUpperCase('Transaction Hash\n'), color: '#442A8E', fontSize: 10, lineHeight: 1.4, font: 'Poppins',  bold: true },
                 { text: tx.hash, fontSize: 10, italics: true },
-              ], marginTop: -40, marginBottom: 20
+              ], marginTop: -42, marginBottom: 20
             },
             headerBlock('Transaction data'),
             {
               table: {
-                widths: [45, '*'],
+                widths: [50, '*'],
                 body: [
-                  [{ text: 'From', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'To' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Block' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4, italics: true}],
-                  [{ text: 'Hash' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Nonce' }, { text: tx.nonce, alignment: 'right', marginBottom: 4, italics: true}],
-                  [{ text: 'Value' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Gas Used' }, { text: tx.gas, alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Gas Price' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4, italics: true }],
-                  [{ text: 'Fee' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'From', alignment: 'left', font: 'Poppins' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'To', font: 'Poppins' }, { text: tx.to, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Block', font: 'Poppins' }, { text: tx.blockNumber, alignment: 'right', marginBottom: 4, italics: true}],
+                  [{ text: 'Hash', font: 'Poppins' }, { text: tx.hash, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Nonce', font: 'Poppins' }, { text: tx.nonce, alignment: 'right', marginBottom: 4, italics: true}],
+                  [{ text: 'Value', font: 'Poppins' }, { text: tx.value + ' ETH', alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Gas Used', font: 'Poppins' }, { text: tx.gas, alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Gas Price', font: 'Poppins' }, { text: ethToGwei(tx.gasPrice), alignment: 'right', marginBottom: 4, italics: true }],
+                  [{ text: 'Fee', font: 'Poppins' }, { text: calculateTransactionFee(tx.gasPrice, tx.gas), alignment: 'right', marginBottom: 4, italics: true }],
 
                 ]
               },
@@ -158,7 +159,7 @@ router.get('/generate', cors(), (req, res) => {
 
         switch (tx.type) {
           case 'send-ether':
-            docDefinition.content.splice(6, 0, headerBlock('Coin Transfer'), {
+            docDefinition.content.splice(6, 0, headerBlock('Coin Transfer', 11), {
               table: {
                 widths: ['*'],
 
@@ -169,7 +170,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [String(tx.data.value) + 'ETH'],
+                  [{text: String(tx.data.value) + 'ETH', font: "Poppins", bold: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -183,7 +184,7 @@ router.get('/generate', cors(), (req, res) => {
             })
             break
           case 'send-erc20-token':
-            docDefinition.content.splice(6, 0, headerBlock('Token Transfer'), {
+            docDefinition.content.splice(6, 0, headerBlock('Token Transfer', 11), {
               table: {
                 widths: ['*'],
 
@@ -194,7 +195,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [value() + ' ' + tx.data.contractInfo.symbol],
+                  [{text:value() + ' ' + tx.data.contractInfo.symbol, font: "Poppins", bold: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -215,8 +216,8 @@ router.get('/generate', cors(), (req, res) => {
                 table: {
                   widths: [50, '*'],
                   body: [
-                    [{ text: 'Smart Contract', alignment: 'left' }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
-                    [{ text: 'Method' }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
+                    [{ text: 'Smart Contract', alignment: 'left', font: "Poppins" }, { text: tx.from, alignment: 'right', marginBottom: 4, italics: true }],
+                    [{ text: 'Method', font: "Poppins" }, { text: tx.data.method, alignment: 'right', marginBottom: 4, italics: true }],
                   ]
                 },
                 layout: 'noBorders',
@@ -231,16 +232,16 @@ router.get('/generate', cors(), (req, res) => {
             let tableBodyMessage = []
 
             if (parseStringToObject(tx.data.message)) {
-              tableBodyMessage.push([{ text: 'Amount' }, { text: parseStringToObject(tx.data.message).moneyRequest.amount + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right', italics: true}],
-                [{ text: 'Comment' }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right',italics: true }])
+              tableBodyMessage.push([{ text: 'Amount', font: "Poppins" }, { text: parseStringToObject(tx.data.message).moneyRequest.amount + ' ' + parseStringToObject(tx.data.message).moneyRequest.token, alignment: 'right', italics: true}],
+                [{ text: 'Comment', font: "Poppins" }, { text: parseStringToObject(tx.data.message).moneyRequest.text, alignment: 'right',italics: true }])
             } else {
-              tableBodyMessage.push([{ text: tx.data.message, alignment: 'left' }])
+              tableBodyMessage.push([{ text: tx.data.message, alignment: 'left', font: "Poppins"}])
             }
 
             docDefinition.content.splice(6, 0, headerBlock(parseStringToObject(tx.data.message) ? 'Invoice' : 'Message'), {
 
               table: {
-                widths: [!parseStringToObject(tx.data.message) ? '*' : 50, '*'],
+                widths: [!parseStringToObject(tx.data.message) ? '*' : 55, '*'],
                 body: tableBodyMessage
               },
               layout: 'noBorders',
@@ -254,10 +255,10 @@ router.get('/generate', cors(), (req, res) => {
             swapData.push(headerBlock('Swap Info'),
               {
                 table: {
-                  widths: [50, '*'],
+                  widths: [55, '*'],
                   body: [
-                    [{ text: 'Blockchain', alignment: 'left' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                    [{ text: 'Exchange' }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Blockchain', alignment: 'left', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Exchange', font: "Poppins" }, { text: tx.data.dex, alignment: 'right', marginBottom: 4 }],
                   ]
                 },
                 layout: 'noBorders',
@@ -269,10 +270,10 @@ router.get('/generate', cors(), (req, res) => {
             docDefinition.content.splice(-4, 0, headerBlock('Token Approval Info'),
               {
                 table: {
-                  widths: [70, '*'],
+                  widths: [80, '*'],
                   body: [
-                    [{ text: 'Token', alignment: 'left' }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
-                    [{ text: 'New Allowance' }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Token', alignment: 'left', font: "Poppins" }, { text: tx.data?.contractInfo?.name, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'New Allowance', font: "Poppins" }, { text: isHexadecimal(value()) ? value() + symbol() : 'Unlimited ' + symbol(), alignment: 'right', marginBottom: 4 }],
                   ]
                 },
                 layout: 'noBorders',
@@ -283,7 +284,7 @@ router.get('/generate', cors(), (req, res) => {
             break
           case 'send-nft':
             const logs = tx.logs.filter(l => l.name === 'Transfer' && Object.keys(l.params).includes('nft_id'))
-            docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer'), {
+            docDefinition.content.splice(-4, 0, headerBlock('NFT Transfer', 11), {
               table: {
                 widths: ['*'],
 
@@ -318,9 +319,9 @@ router.get('/generate', cors(), (req, res) => {
                 table: {
                   widths: [70, '*'],
                   body: [
-                    [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                    [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                    [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Amount', alignment: 'left', font: "Poppins" }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Blockchain', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                    [{ text: 'Protocol', font: "Poppins" }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
                   ]
                 },
                 layout: 'noBorders',
@@ -334,9 +335,9 @@ router.get('/generate', cors(), (req, res) => {
               table: {
                 widths: [70, '*'],
                 body: [
-                  [{ text: 'Amount', alignment: 'left' }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Blockchain' }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
-                  [{ text: 'Protocol' }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Amount', alignment: 'left', font: "Poppins" }, { text: tx.data.value + ' ' + tx.data.contractInfo.symbol, alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Blockchain', font: "Poppins" }, { text: capitalizeFirstLetter(tx.blockchain), alignment: 'right', marginBottom: 4 }],
+                  [{ text: 'Protocol', font: "Poppins" }, { text: capitalizeFirstLetter(tx.data.protocol), alignment: 'right', marginBottom: 4 }],
                 ]
               },
               layout: 'noBorders',
@@ -416,8 +417,8 @@ router.get('/generate', cors(), (req, res) => {
         return text.toUpperCase()
       }
 
-      function headerBlock(text) {
-        return [{ text: makeUpperCase(text), fontSize: 10, margin: [0, 20, 0, 6], color: '#442A8E', bold: true }, {
+      function headerBlock(text, size = 10) {
+        return [{ text: makeUpperCase(text), fontSize: size, margin: [0, 20, 0, 6], color: '#442A8E',  font: 'Poppins',  bold: true }, {
           image: bgImg, width: 518,
           height: 0.5, marginBottom: 5
         }]
@@ -501,7 +502,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -517,7 +518,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -533,7 +534,7 @@ router.get('/generate', cors(), (req, res) => {
                     width: 5,
                     height: 10,
                   }],
-                  [calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol],
+                  [{text:calcLogEntryValue(transfer) + ' ' + transfer.contractInfo.symbol,  font: 'Poppins', bold: true}],
                   [{
                     image: arrowImg,
                     width: 5,
@@ -544,7 +545,7 @@ router.get('/generate', cors(), (req, res) => {
               }
 
               if (tableBody.length > 0) {
-                callArr.push(headerBlock("Token transfer"),
+                callArr.push(headerBlock("Token transfer", 12),
                   {
                     table: {
                       widths: ['*'],
@@ -559,7 +560,7 @@ router.get('/generate', cors(), (req, res) => {
             })
 
             if (transfersList.some(l => l.name === 'Withdrawal')) {
-              callArr.push(headerBlock("Token Transfer"), {
+              callArr.push(headerBlock("Token Transfer", 11), {
                 table: {
                   widths: ['*'],
 
@@ -570,7 +571,7 @@ router.get('/generate', cors(), (req, res) => {
                       width: 5,
                       height: 10,
                     }],
-                    [calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0]) + 'ETH'],
+                    [{text: calcLogEntryValue(transfersList.filter(l => l.name === 'Withdrawal')[0]) + 'ETH', font: "Poppins", bold: true}],
                     [{
                       image: arrowImg,
                       width: 5,
